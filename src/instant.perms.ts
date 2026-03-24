@@ -58,8 +58,9 @@ const rules = {
 			}
 		},
 		bind: {
-			isOwner: 'auth.id != null && auth.id == data.ownerId',
-			isSelfOwnedCreate: 'auth.id != null && auth.id == data.ownerId',
+			isAdminRole: "'admin' in auth.ref('$user.role')",
+			isOwner: 'isAdminRole && auth.id != null && auth.id == data.ownerId',
+			isSelfOwnedCreate: 'isAdminRole && auth.id != null && auth.id == data.ownerId',
 			isPublicPoll: "data.status in ['live', 'closed']",
 			ownerUnchanged: "!('ownerId' in request.modifiedFields) || newData.ownerId == data.ownerId",
 			validEnums:
@@ -81,7 +82,8 @@ const rules = {
 			}
 		},
 		bind: {
-			isPollOwner: 'auth.id != null && auth.id == data.pollOwnerId',
+			isAdminRole: "'admin' in auth.ref('$user.role')",
+			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			isParticipantVisible: "data.status in ['active', 'done']",
 			validStatus: "data.status in ['queued', 'active', 'done']",
 			validType: "data.type in ['multiple_choice']",
@@ -106,7 +108,8 @@ const rules = {
 			}
 		},
 		bind: {
-			isPollOwner: 'auth.id != null && auth.id == data.pollOwnerId',
+			isAdminRole: "'admin' in auth.ref('$user.role')",
+			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			questionVisible:
 				"('active' in data.ref('question.status')) || ('done' in data.ref('question.status'))",
 			immutableOwnership:
@@ -137,8 +140,9 @@ const rules = {
 			}
 		},
 		bind: {
+			isAdminRole: "'admin' in auth.ref('$user.role')",
 			isVoter: 'auth.id != null && auth.id == data.voterId',
-			isPollOwner: 'auth.id != null && auth.id == data.pollOwnerId',
+			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			isCollecting: "'collecting' in data.ref('poll.activePhase')",
 			isQuestionActive: "'active' in data.ref('question.status')",
 			questionBelongsToPoll: "data.pollId in data.ref('question.pollId')",
@@ -168,7 +172,8 @@ const rules = {
 			countsByAnswer: 'isPollOwner || canViewBreakdown'
 		},
 		bind: {
-			isPollOwner: 'auth.id != null && auth.id == data.pollOwnerId',
+			isAdminRole: "'admin' in auth.ref('$user.role')",
+			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			pollVisible: "('live' in data.ref('poll.status')) || ('closed' in data.ref('poll.status'))",
 			canViewBreakdown:
 				"('revealed' in data.ref('poll.activePhase')) && ('full' in data.ref('poll.participantResultsMode'))",
@@ -193,8 +198,9 @@ const rules = {
 			}
 		},
 		bind: {
+			isAdminRole: "'admin' in auth.ref('$user.role')",
 			isSelf: 'auth.id != null && auth.id == data.userId',
-			isPollOwner: 'auth.id != null && auth.id == data.pollOwnerId',
+			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			pollVisible: "('live' in data.ref('poll.status')) || ('closed' in data.ref('poll.status'))",
 			onlyPresenceFields:
 				"request.modifiedFields.all(field, field in ['lastSeenAt', 'hasVotedActive', 'activeQuestionId'])",

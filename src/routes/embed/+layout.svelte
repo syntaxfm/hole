@@ -2,8 +2,10 @@
 	let { children } = $props();
 </script>
 
-<section class="section gradient-slate" style="min-height: 100dvh;">
-	<div class="layout-readable center stack" style="--gap: var(--vs-m);">
-		{@render children()}
-	</div>
+<section class="app-shell gradient-slate">
+	<main class="section">
+		<div class="layout-readable center stack">
+			{@render children()}
+		</div>
+	</main>
 </section>

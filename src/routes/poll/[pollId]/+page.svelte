@@ -153,10 +153,10 @@
 {#if auth.isLoading}
 	<p class="text-muted">Checking your session…</p>
 {:else if !auth.user}
-	<div class="callout">
+	<div class="callout stack">
 		<p><strong>Join this poll</strong></p>
 		<p>Sign in as a guest to vote anonymously.</p>
-		<div class="cluster" style="--gap: var(--vs-xs); margin-top: var(--vs-s);">
+		<div class="cluster">
 			<button class="button primary" disabled={isSigningIn} onclick={signInAsGuest}>
 				{isSigningIn ? 'Joining…' : 'Join as guest'}
 			</button>
@@ -174,7 +174,7 @@
 		<p>This poll doesn't exist or is not visible yet.</p>
 	</div>
 {:else}
-	<section class="layout-card" style="--min-card-width: 220px; --gap: var(--vs-s);">
+	<section class="layout-card">
 		<article class="stat-card">
 			<small>Poll</small>
 			<strong>{poll.title}</strong>
@@ -191,18 +191,13 @@
 
 	{#if activeQuestion}
 		<section class="box">
-			<div class="stack" style="--gap: var(--vs-m);">
-				<div class="stack" style="--gap: var(--vs-xs);">
+			<div class="stack">
+				<div class="stack">
 					<h3 class="h5 no-margin">Question {activeQuestion.order}</h3>
 					<p class="no-margin">{activeQuestion.text}</p>
 				</div>
 
-				<div
-					class="stack"
-					role="radiogroup"
-					aria-label="Answer choices"
-					style="--gap: var(--vs-xs);"
-				>
+				<div class="stack" role="radiogroup" aria-label="Answer choices">
 					{#each activeQuestion.answers ?? [] as answer (answer.id)}
 						<button
 							type="button"
@@ -221,7 +216,7 @@
 					{/each}
 				</div>
 
-				<div class="cluster" style="--gap: var(--vs-xs); align-items: center;">
+				<div class="cluster">
 					<button
 						class="button primary"
 						disabled={!canVote || !selectedAnswerId || isCastingVote}
@@ -244,7 +239,7 @@
 		</section>
 
 		<section class="box">
-			<div class="stack" style="--gap: var(--vs-xs);">
+			<div class="stack">
 				<h3 class="h5 no-margin">Participation</h3>
 				<p class="no-margin">{activeStats?.totalVotes ?? 0} responses received</p>
 				{#if revealFullResults}

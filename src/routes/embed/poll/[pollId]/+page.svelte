@@ -60,14 +60,14 @@
 	</div>
 {:else if !displayQuestion}
 	<section class="box">
-		<div class="stack" style="--gap: var(--vs-xs);">
+		<div class="stack">
 			<h2 class="h3 no-margin">{poll.title}</h2>
 			<p class="text-muted no-margin">Waiting for a question…</p>
 		</div>
 	</section>
 {:else}
 	<section class="box gradient-surface">
-		<div class="stack" style="--gap: var(--vs-s);">
+		<div class="stack">
 			<span class="chip">{poll.title}</span>
 			<h2 class="h3 no-margin">{displayQuestion.text}</h2>
 			<p class="text-muted no-margin">Responses: {stats?.totalVotes ?? 0}</p>
@@ -76,7 +76,7 @@
 
 	{#if canShowBreakdown}
 		<section class="box">
-			<div class="stack" style="--gap: var(--vs-s);">
+			<div class="stack">
 				<h3 class="h5 no-margin">Answer breakdown</h3>
 				<div class="table">
 					<table>

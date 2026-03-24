@@ -129,14 +129,13 @@
 {:else}
 	<form
 		class="stack"
-		style="--gap: var(--vs-l);"
 		onsubmit={(event) => {
 			event.preventDefault();
 			void submitCreatePoll();
 		}}
 	>
 		<section class="box">
-			<div class="stack" style="--gap: var(--vs-m);">
+			<div class="stack">
 				<div class="split">
 					<h2 class="h3 no-margin">Create a new poll</h2>
 					<span class="chip">{questions.length} questions · {totalAnswers} answers</span>
@@ -150,7 +149,7 @@
 		</section>
 
 		<section class="box">
-			<div class="stack" style="--gap: var(--vs-s);">
+			<div class="stack">
 				<h3 class="h5 no-margin">Session settings</h3>
 
 				<label class="form-option-row">
@@ -168,7 +167,7 @@
 					<span>Public embed enabled</span>
 				</label>
 
-				<fieldset class="stack" style="--gap: var(--vs-xs);">
+				<fieldset class="stack">
 					<legend class="text-muted">Participant results visibility</legend>
 					<label class="form-option-row">
 						<input
@@ -198,7 +197,7 @@
 			</div>
 		</section>
 
-		<section class="stack" style="--gap: var(--vs-s);">
+		<section class="stack">
 			<div class="split">
 				<h3 class="h5 no-margin">Questions</h3>
 				<button class="button" type="button" onclick={addQuestion}>+ Add question</button>
@@ -206,7 +205,7 @@
 
 			{#each questions as question, questionIndex (question.localId)}
 				<article class="box">
-					<div class="stack" style="--gap: var(--vs-s);">
+					<div class="stack">
 						<div class="split">
 							<h4 class="h5 no-margin">Question {questionIndex + 1}</h4>
 							<button
@@ -228,7 +227,7 @@
 							></textarea>
 						</label>
 
-						<div class="stack" style="--gap: var(--vs-xs);">
+						<div class="stack">
 							<div class="split">
 								<h5 class="no-margin fs-s">Answers</h5>
 								<button
@@ -241,13 +240,13 @@
 							</div>
 
 							{#each question.answers as answer, answerIndex (answer.localId)}
-								<div class="cluster" style="--gap: var(--vs-xs); align-items: end;">
-									<label class="stack full" style="--gap: var(--vs-xs);">
+								<div class="cluster">
+									<label class="stack full">
 										<span class="visually-hidden">Answer {answerIndex + 1} text</span>
 										<input bind:value={answer.text} placeholder={`Answer ${answerIndex + 1}`} />
 									</label>
 
-									<label class="stack" style="--gap: var(--vs-xs);">
+									<label class="stack">
 										<span class="visually-hidden">Answer {answerIndex + 1} color</span>
 										<input type="color" bind:value={answer.color} />
 									</label>

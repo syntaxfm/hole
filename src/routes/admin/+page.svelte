@@ -28,18 +28,18 @@
 	}
 </script>
 
-<section class="stack" style="--gap: var(--vs-l);">
+<section class="stack">
 	<div class="split">
-		<div class="stack" style="--gap: var(--vs-xs);">
+		<div class="stack">
 			<h2 class="h3 no-margin">Poll dashboard</h2>
 			<p class="text-muted no-margin">Create and manage all polls for this account.</p>
 		</div>
-		<div class="cluster" style="--gap: var(--vs-xs);">
+		<div class="cluster">
 			<a class="button primary" href="/admin/poll/new">+ New poll</a>
 		</div>
 	</div>
 
-	<div class="layout-card" style="--min-card-width: 180px; --gap: var(--vs-s);">
+	<div class="layout-card">
 		<article class="stat-card">
 			<small>Total polls</small>
 			<strong>{polls.length}</strong>
@@ -69,16 +69,16 @@
 			<p>{query.error.message}</p>
 		</div>
 	{:else if !polls.length}
-		<div class="callout">
+		<div class="callout stack">
 			<p><strong>No polls yet.</strong></p>
 			<p>Create your first poll to start collecting live responses.</p>
-			<div class="cluster" style="--gap: var(--vs-xs); margin-top: var(--vs-s);">
+			<div class="cluster">
 				<a class="button primary" href="/admin/poll/new">Create first poll</a>
 			</div>
 		</div>
 	{:else}
 		<article class="box">
-			<div class="stack" style="--gap: var(--vs-m);">
+			<div class="stack">
 				<header class="split">
 					<h3 class="h5 no-margin">Recent polls</h3>
 					<span class="chip">{polls.length} total</span>
@@ -99,7 +99,7 @@
 							{#each polls as poll (poll.id)}
 								<tr>
 									<td>
-										<div class="stack" style="--gap: var(--vs-xs);">
+										<div class="stack">
 											<strong>{poll.title}</strong>
 											<small class="text-muted">{poll.id}</small>
 										</div>
@@ -112,21 +112,19 @@
 									<td>{(poll.questions ?? []).length}</td>
 									<td>{pollResponseCount(poll)}</td>
 									<td class="text-end">
-										<div class="cluster" style="--gap: var(--vs-xs); justify-content: flex-end;">
-											<a class="button mini" href={`/admin/poll/${poll.id}/drive`}>Drive</a>
-											<a
-												class="button mini"
-												href={`/poll/${poll.id}`}
-												target="_blank"
-												rel="noreferrer">Participant</a
-											>
-											<a
-												class="button mini"
-												href={`/embed/poll/${poll.id}`}
-												target="_blank"
-												rel="noreferrer">Embed</a
-											>
-										</div>
+										<a class="button mini" href={`/admin/poll/${poll.id}/drive`}>Drive</a>
+										<a
+											class="button mini"
+											href={`/poll/${poll.id}`}
+											target="_blank"
+											rel="noreferrer">Participant</a
+										>
+										<a
+											class="button mini"
+											href={`/embed/poll/${poll.id}`}
+											target="_blank"
+											rel="noreferrer">Embed</a
+										>
 									</td>
 								</tr>
 							{/each}

@@ -7,10 +7,10 @@
 	const embedHref = $derived(`/embed/poll/${pollId}`);
 </script>
 
-<section class="stack" style="--gap: var(--vs-l);">
+<section class="stack">
 	<header class="header border">
 		<h2 class="h3 no-margin">Poll {pollId}</h2>
-		<nav class="cluster" style="--gap: var(--vs-xs);">
+		<nav class="cluster">
 			<a class="button primary" href={driveHref}>Drive</a>
 			<a class="button" href={participantHref} target="_blank" rel="noreferrer">Participant</a>
 			<a class="button" href={embedHref} target="_blank" rel="noreferrer">Embed</a>

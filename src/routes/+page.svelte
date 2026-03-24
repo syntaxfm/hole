@@ -8,22 +8,22 @@
 </script>
 
 <main class="section">
-	<div class="layout-readable center stack" style="--gap: var(--vs-l);">
-		<section class="stack text-center" style="--gap: var(--vs-s);">
+	<div class="layout-readable center stack">
+		<section class="stack text-center">
 			<h1>Hole — realtime polling</h1>
-			<p class="text-muted narrow" style="--narrow-width: 60ch; margin-inline: auto;">
+			<p class="text-muted narrow center">
 				Use your poll id to jump into participant, admin drive, or embed views.
 			</p>
 		</section>
 
 		<section class="box">
-			<div class="stack" style="--gap: var(--vs-m);">
+			<div class="stack">
 				<label class="row" for="poll-id-input">
 					<span>Poll ID</span>
 					<input id="poll-id-input" bind:value={pollId} placeholder="Paste poll id" />
 				</label>
 
-				<div class="cluster" style="--gap: var(--vs-s);">
+				<div class="cluster">
 					<a class="button" href="/admin">Admin dashboard</a>
 					<a class="button primary" href="/admin/poll/new">+ New poll</a>
 					<a class="button" aria-disabled={!hasPollId} href={adminDriveHref}>Open drive</a>

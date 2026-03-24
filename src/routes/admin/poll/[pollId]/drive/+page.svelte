@@ -205,7 +205,7 @@
 		<p>You may not own this poll, or the id is invalid.</p>
 	</div>
 {:else}
-	<section class="layout-card" style="--min-card-width: 220px; --gap: var(--vs-s);">
+	<section class="layout-card">
 		<article class="stat-card">
 			<small>Poll</small>
 			<strong>{poll.title}</strong>
@@ -226,9 +226,9 @@
 	</section>
 
 	<section class="box">
-		<div class="stack" style="--gap: var(--vs-s);">
+		<div class="stack">
 			<h3 class="h5 no-margin">Drive controls</h3>
-			<div class="cluster" style="--gap: var(--vs-xs);">
+			<div class="cluster">
 				<button
 					class="button primary"
 					disabled={pendingAction !== null || !sortedQuestions.length}
@@ -264,13 +264,13 @@
 		</div>
 	</section>
 
-	<section class="stack" style="--gap: var(--vs-s);">
+	<section class="stack">
 		<h3 class="h5 no-margin">Questions</h3>
 		{#each sortedQuestions as question (question.id)}
 			<article class={`box ${question.id === activeQuestion?.id ? 'glow' : ''}`}>
-				<div class="stack" style="--gap: var(--vs-s);">
+				<div class="stack">
 					<div class="split">
-						<div class="cluster" style="--gap: var(--vs-xs); align-items: center;">
+						<div class="cluster">
 							<span class="chip">Q{question.order}</span>
 							<strong>{question.text}</strong>
 						</div>
