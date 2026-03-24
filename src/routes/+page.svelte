@@ -16,8 +16,8 @@
 			</p>
 		</section>
 
-		<section class="card">
-			<div class="card-body stack" style="--gap: var(--vs-m);">
+		<section class="box">
+			<div class="stack" style="--gap: var(--vs-m);">
 				<label class="row" for="poll-id-input">
 					<span>Poll ID</span>
 					<input id="poll-id-input" bind:value={pollId} placeholder="Paste poll id" />

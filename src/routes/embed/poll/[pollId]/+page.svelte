@@ -59,15 +59,15 @@
 		<p>Embed is only visible when a poll is live or closed.</p>
 	</div>
 {:else if !displayQuestion}
-	<section class="card">
-		<div class="card-body stack" style="--gap: var(--vs-xs);">
+	<section class="box">
+		<div class="stack" style="--gap: var(--vs-xs);">
 			<h2 class="h3 no-margin">{poll.title}</h2>
 			<p class="text-muted no-margin">Waiting for a question…</p>
 		</div>
 	</section>
 {:else}
-	<section class="card gradient-surface">
-		<div class="card-body stack" style="--gap: var(--vs-s);">
+	<section class="box gradient-surface">
+		<div class="stack" style="--gap: var(--vs-s);">
 			<span class="chip">{poll.title}</span>
 			<h2 class="h3 no-margin">{displayQuestion.text}</h2>
 			<p class="text-muted no-margin">Responses: {stats?.totalVotes ?? 0}</p>
@@ -75,8 +75,8 @@
 	</section>
 
 	{#if canShowBreakdown}
-		<section class="card">
-			<div class="card-body stack" style="--gap: var(--vs-s);">
+		<section class="box">
+			<div class="stack" style="--gap: var(--vs-s);">
 				<h3 class="h5 no-margin">Answer breakdown</h3>
 				<div class="table">
 					<table>

@@ -225,8 +225,8 @@
 		</article>
 	</section>
 
-	<section class="card">
-		<div class="card-body stack" style="--gap: var(--vs-s);">
+	<section class="box">
+		<div class="stack" style="--gap: var(--vs-s);">
 			<h3 class="h5 no-margin">Drive controls</h3>
 			<div class="cluster" style="--gap: var(--vs-xs);">
 				<button
@@ -267,8 +267,8 @@
 	<section class="stack" style="--gap: var(--vs-s);">
 		<h3 class="h5 no-margin">Questions</h3>
 		{#each sortedQuestions as question (question.id)}
-			<article class="card" class:featured={question.id === activeQuestion?.id}>
-				<div class="card-body stack" style="--gap: var(--vs-s);">
+			<article class={`box ${question.id === activeQuestion?.id ? 'glow' : ''}`}>
+				<div class="stack" style="--gap: var(--vs-s);">
 					<div class="split">
 						<div class="cluster" style="--gap: var(--vs-xs); align-items: center;">
 							<span class="chip">Q{question.order}</span>

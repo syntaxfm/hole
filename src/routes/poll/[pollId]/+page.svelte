@@ -190,8 +190,8 @@
 	</section>
 
 	{#if activeQuestion}
-		<section class="card">
-			<div class="card-body stack" style="--gap: var(--vs-m);">
+		<section class="box">
+			<div class="stack" style="--gap: var(--vs-m);">
 				<div class="stack" style="--gap: var(--vs-xs);">
 					<h3 class="h5 no-margin">Question {activeQuestion.order}</h3>
 					<p class="no-margin">{activeQuestion.text}</p>
@@ -243,8 +243,8 @@
 			</div>
 		</section>
 
-		<section class="card">
-			<div class="card-body stack" style="--gap: var(--vs-xs);">
+		<section class="box">
+			<div class="stack" style="--gap: var(--vs-xs);">
 				<h3 class="h5 no-margin">Participation</h3>
 				<p class="no-margin">{activeStats?.totalVotes ?? 0} responses received</p>
 				{#if revealFullResults}

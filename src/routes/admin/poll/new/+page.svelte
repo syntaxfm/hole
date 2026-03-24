@@ -135,8 +135,8 @@
 			void submitCreatePoll();
 		}}
 	>
-		<section class="card">
-			<div class="card-body stack" style="--gap: var(--vs-m);">
+		<section class="box">
+			<div class="stack" style="--gap: var(--vs-m);">
 				<div class="split">
 					<h2 class="h3 no-margin">Create a new poll</h2>
 					<span class="chip">{questions.length} questions · {totalAnswers} answers</span>
@@ -149,8 +149,8 @@
 			</div>
 		</section>
 
-		<section class="card">
-			<div class="card-body stack" style="--gap: var(--vs-s);">
+		<section class="box">
+			<div class="stack" style="--gap: var(--vs-s);">
 				<h3 class="h5 no-margin">Session settings</h3>
 
 				<label class="form-option-row">
@@ -205,8 +205,8 @@
 			</div>
 
 			{#each questions as question, questionIndex (question.localId)}
-				<article class="card">
-					<div class="card-body stack" style="--gap: var(--vs-s);">
+				<article class="box">
+					<div class="stack" style="--gap: var(--vs-s);">
 						<div class="split">
 							<h4 class="h5 no-margin">Question {questionIndex + 1}</h4>
 							<button

@@ -77,8 +77,8 @@
 			</div>
 		</div>
 	{:else}
-		<article class="card">
-			<div class="card-body stack" style="--gap: var(--vs-m);">
+		<article class="box">
+			<div class="stack" style="--gap: var(--vs-m);">
 				<header class="split">
 					<h3 class="h5 no-margin">Recent polls</h3>
 					<span class="chip">{polls.length} total</span>
