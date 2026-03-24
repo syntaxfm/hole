@@ -20,8 +20,13 @@
 	);
 
 	const currentUser = $derived((currentUserQuery.data?.$users?.[0] ?? null) as UserRecord | null);
+	const currentUserRole = $derived(
+		String(currentUser?.role ?? '')
+			.trim()
+			.toLowerCase()
+	);
 	const isGuestSession = $derived(Boolean(auth.user?.isGuest));
-	const isAdmin = $derived(Boolean(auth.user && !isGuestSession && currentUser?.role === 'admin'));
+	const isAdmin = $derived(Boolean(auth.user && !isGuestSession && currentUserRole === 'admin'));
 
 	let authError = $state<string | null>(null);
 	let pending = $state<'send-code' | 'verify-code' | 'signout' | null>(null);
@@ -205,6 +210,7 @@
 					This account is signed in, but it is not an admin. Promote this user in
 					<code>$users.role</code> to <code>admin</code>.
 				</p>
+				<p class="text-muted no-margin">Detected role: {currentUser?.role ?? '(none)'}</p>
 			</div>
 		{:else}
 			{@render children()}

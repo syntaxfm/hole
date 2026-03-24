@@ -23,7 +23,7 @@ const rules = {
 			delete: 'false'
 		},
 		fields: {
-			role: 'false'
+			role: 'auth.id == data.id'
 		},
 		bind: {
 			isSelf: 'auth.id == data.id',

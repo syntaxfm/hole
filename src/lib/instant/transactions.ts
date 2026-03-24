@@ -152,11 +152,13 @@ export function buildCreatePollTx(input: CreatePollInput): {
 
 	const questions = input.questions.map((question, questionIndex) => {
 		const questionId = id();
+		const questionStatsId = id();
 		const normalizedAnswers = normalizeAnswers(question.answers);
 		const answerIds = normalizedAnswers.map(() => id());
 
 		return {
 			questionId,
+			questionStatsId,
 			text: requireNonEmpty(question.text, `Question ${questionIndex + 1} text`),
 			order: questionIndex + 1,
 			status: (startLive && questionIndex === 0 ? 'active' : 'queued') as QuestionStatus,
@@ -224,7 +226,7 @@ export function buildCreatePollTx(input: CreatePollInput): {
 		}
 
 		tx.push(
-			db.tx.question_stats[id()].create({
+			db.tx.question_stats[question.questionStatsId].create({
 				pollId,
 				questionId: question.questionId,
 				pollOwnerId: input.ownerId,
@@ -232,10 +234,8 @@ export function buildCreatePollTx(input: CreatePollInput): {
 				countsByAnswer: question.countsByAnswer,
 				updatedAt: createdAt
 			}),
-			db.tx.question_stats.lookup('questionId', question.questionId).link({ poll: pollId }),
-			db.tx.question_stats
-				.lookup('questionId', question.questionId)
-				.link({ question: question.questionId })
+			db.tx.question_stats[question.questionStatsId].link({ poll: pollId }),
+			db.tx.question_stats[question.questionStatsId].link({ question: question.questionId })
 		);
 	}
 
@@ -263,6 +263,7 @@ export function buildAddQuestionTx(input: AddQuestionInput): {
 } {
 	const createdAt = nowTs();
 	const questionId = id();
+	const questionStatsId = id();
 	const text = requireNonEmpty(input.text, 'Question text');
 	const answers = normalizeAnswers(input.answers);
 	const answerIds = answers.map(() => id());
@@ -299,7 +300,7 @@ export function buildAddQuestionTx(input: AddQuestionInput): {
 	}
 
 	tx.push(
-		db.tx.question_stats[id()].create({
+		db.tx.question_stats[questionStatsId].create({
 			pollId: input.pollId,
 			questionId,
 			pollOwnerId: input.pollOwnerId,
@@ -307,8 +308,8 @@ export function buildAddQuestionTx(input: AddQuestionInput): {
 			countsByAnswer,
 			updatedAt: createdAt
 		}),
-		db.tx.question_stats.lookup('questionId', questionId).link({ poll: input.pollId }),
-		db.tx.question_stats.lookup('questionId', questionId).link({ question: questionId })
+		db.tx.question_stats[questionStatsId].link({ poll: input.pollId }),
+		db.tx.question_stats[questionStatsId].link({ question: questionId })
 	);
 
 	return { questionId, answerIds, tx };
