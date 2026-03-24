@@ -48,6 +48,13 @@ export type CastOrRevoteInput = {
 	participantSessionId?: string;
 };
 
+export type RevoteByVoteKeyInput = {
+	questionId: string;
+	answerId: string;
+	voterId: string;
+	participantSessionId?: string;
+};
+
 export type RecomputeStatsInput = {
 	pollId: string;
 	questionId: string;
@@ -352,6 +359,40 @@ export function buildCastOrRevoteTx(input: CastOrRevoteInput): AppTxChunk[] {
 			db.tx.votes[voteId].link({ voter: input.voterId })
 		);
 	}
+
+	if (input.participantSessionId) {
+		tx.push(
+			db.tx.participant_sessions[input.participantSessionId].update(
+				{
+					activeQuestionId: input.questionId,
+					hasVotedActive: true,
+					lastSeenAt: updatedAt
+				},
+				{ upsert: false }
+			)
+		);
+	}
+
+	return tx;
+}
+
+/**
+ * Fallback revote update by unique voterQuestionKey lookup.
+ *
+ * Useful when two clients race to create the first vote and one loses the unique constraint.
+ */
+export function buildRevoteByVoteKeyTx(input: RevoteByVoteKeyInput): AppTxChunk[] {
+	const updatedAt = nowTs();
+	const voteKey = voterQuestionKey(input.voterId, input.questionId);
+	const tx: AppTxChunk[] = [
+		db.tx.votes.lookup('voterQuestionKey', voteKey).update(
+			{
+				answerId: input.answerId,
+				updatedAt
+			},
+			{ upsert: false }
+		)
+	];
 
 	if (input.participantSessionId) {
 		tx.push(

@@ -4,6 +4,7 @@
 	import {
 		buildCastOrRevoteTx,
 		buildCreateParticipantSessionTx,
+		buildRevoteByVoteKeyTx,
 		buildTouchParticipantSessionTx
 	} from '$lib/instant/transactions';
 
@@ -52,6 +53,11 @@
 	let errorMessage = $state<string | null>(null);
 	let sessionQuestionSyncKey = $state<string | null>(null);
 
+	function isUniqueConstraintErrorFor(error: unknown, entity: string, field: string): boolean {
+		const message = error instanceof Error ? error.message : String(error ?? '');
+		return message.includes('unique attribute') && message.includes(`${entity}.${field}`);
+	}
+
 	$effect(() => {
 		if (myActiveVote?.answerId && selectedAnswerId !== myActiveVote.answerId) {
 			selectedAnswerId = myActiveVote.answerId;
@@ -78,8 +84,12 @@
 				});
 				await db.transact(tx);
 			} catch (error) {
-				errorMessage =
-					error instanceof Error ? error.message : 'Unable to initialize your participant session.';
+				if (!isUniqueConstraintErrorFor(error, 'participant_sessions', 'pollUserKey')) {
+					errorMessage =
+						error instanceof Error
+							? error.message
+							: 'Unable to initialize your participant session.';
+				}
 			} finally {
 				isCreatingSession = false;
 			}
@@ -133,7 +143,23 @@
 				})
 			);
 		} catch (error) {
-			errorMessage = error instanceof Error ? error.message : 'Unable to submit vote.';
+			if (!isUniqueConstraintErrorFor(error, 'votes', 'voterQuestionKey')) {
+				errorMessage = error instanceof Error ? error.message : 'Unable to submit vote.';
+			} else {
+				try {
+					await db.transact(
+						buildRevoteByVoteKeyTx({
+							questionId: activeQuestion.id,
+							answerId: selectedAnswerId,
+							voterId: auth.user.id,
+							participantSessionId: participantSession?.id
+						})
+					);
+				} catch (fallbackError) {
+					errorMessage =
+						fallbackError instanceof Error ? fallbackError.message : 'Unable to submit vote.';
+				}
+			}
 		} finally {
 			isCastingVote = false;
 		}
