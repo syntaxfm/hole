@@ -5,6 +5,44 @@ import type { AppSchema } from '../../instant.schema';
 export type AppQuery<Q extends ValidQuery<Q, AppSchema>> = Q;
 
 /**
+ * Admin landing route: /admin
+ *
+ * - Current user's owned polls
+ * - Questions and stats for quick dashboard counts
+ */
+export function adminPollsQuery(ownerId: string): AppQuery<{
+	polls: {
+		$: {
+			where: { ownerId: string };
+			order: { updatedAt: 'desc' };
+			limit: 50;
+		};
+		questions: {
+			$: {
+				order: { order: 'asc' };
+			};
+		};
+		questionStats: {};
+	};
+}> {
+	return {
+		polls: {
+			$: {
+				where: { ownerId },
+				order: { updatedAt: 'desc' },
+				limit: 50
+			},
+			questions: {
+				$: {
+					order: { order: 'asc' }
+				}
+			},
+			questionStats: {}
+		}
+	};
+}
+
+/**
  * Participant route: /poll/[pollId]
  *
  * - Poll metadata and drive state

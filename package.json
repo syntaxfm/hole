@@ -45,6 +45,7 @@
 	},
 	"packageManager": "pnpm@10.33.0",
 	"dependencies": {
+		"@drop-in/graffiti": "^4.23.1",
 		"@instantdb/svelte": "^0.22.169"
 	}
 }
