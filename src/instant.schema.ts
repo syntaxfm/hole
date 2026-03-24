@@ -1,54 +1,54 @@
 // Docs: https://www.instantdb.com/docs/modeling-data
 
-import { i } from "@instantdb/svelte";
+import { i } from '@instantdb/svelte';
 
 const _schema = i.schema({
-  entities: {
-    $files: i.entity({
-      path: i.string().unique().indexed(),
-      url: i.string(),
-    }),
-    $streams: i.entity({
-      abortReason: i.string().optional(),
-      clientId: i.string().unique().indexed(),
-      done: i.boolean().optional(),
-      size: i.number().optional(),
-    }),
-    $users: i.entity({
-      email: i.string().unique().indexed().optional(),
-      imageURL: i.string().optional(),
-      type: i.string().optional(),
-    }),
-  },
-  links: {
-    $streams$files: {
-      forward: {
-        on: "$streams",
-        has: "many",
-        label: "$files",
-      },
-      reverse: {
-        on: "$files",
-        has: "one",
-        label: "$stream",
-        onDelete: "cascade",
-      },
-    },
-    $usersLinkedPrimaryUser: {
-      forward: {
-        on: "$users",
-        has: "one",
-        label: "linkedPrimaryUser",
-        onDelete: "cascade",
-      },
-      reverse: {
-        on: "$users",
-        has: "many",
-        label: "linkedGuestUsers",
-      },
-    },
-  },
-  rooms: {},
+	entities: {
+		$files: i.entity({
+			path: i.string().unique().indexed(),
+			url: i.string()
+		}),
+		$streams: i.entity({
+			abortReason: i.string().optional(),
+			clientId: i.string().unique().indexed(),
+			done: i.boolean().optional(),
+			size: i.number().optional()
+		}),
+		$users: i.entity({
+			email: i.string().unique().indexed().optional(),
+			imageURL: i.string().optional(),
+			type: i.string().optional()
+		})
+	},
+	links: {
+		$streams$files: {
+			forward: {
+				on: '$streams',
+				has: 'many',
+				label: '$files'
+			},
+			reverse: {
+				on: '$files',
+				has: 'one',
+				label: '$stream',
+				onDelete: 'cascade'
+			}
+		},
+		$usersLinkedPrimaryUser: {
+			forward: {
+				on: '$users',
+				has: 'one',
+				label: 'linkedPrimaryUser',
+				onDelete: 'cascade'
+			},
+			reverse: {
+				on: '$users',
+				has: 'many',
+				label: 'linkedGuestUsers'
+			}
+		}
+	},
+	rooms: {}
 });
 
 // This helps TypeScript display nicer intellisense
