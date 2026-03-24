@@ -151,163 +151,119 @@
 </script>
 
 {#if auth.isLoading}
-	<p>Checking your session…</p>
+	<p class="text-muted">Checking your session…</p>
 {:else if !auth.user}
-	<div class="card">
-		<h2>Join this poll</h2>
+	<div class="callout">
+		<p><strong>Join this poll</strong></p>
 		<p>Sign in as a guest to vote anonymously.</p>
-		<button disabled={isSigningIn} onclick={signInAsGuest}>
-			{isSigningIn ? 'Joining…' : 'Join as guest'}
-		</button>
+		<div class="cluster" style="--gap: var(--vs-xs); margin-top: var(--vs-s);">
+			<button class="button primary" disabled={isSigningIn} onclick={signInAsGuest}>
+				{isSigningIn ? 'Joining…' : 'Join as guest'}
+			</button>
+		</div>
 	</div>
 {:else if query.isLoading}
-	<p>Loading poll…</p>
+	<p class="text-muted">Loading poll…</p>
 {:else if query.error}
-	<p class="error">{query.error.message}</p>
+	<div class="callout error">
+		<p>{query.error.message}</p>
+	</div>
 {:else if !poll}
-	<div class="card">
-		<h2>Poll unavailable</h2>
+	<div class="callout warning">
+		<p><strong>Poll unavailable</strong></p>
 		<p>This poll doesn't exist or is not visible yet.</p>
 	</div>
 {:else}
-	<div class="card">
-		<h2>{poll.title}</h2>
-		<p class="meta">Status: {poll.status} · Phase: {poll.activePhase}</p>
-	</div>
+	<section class="layout-card" style="--min-card-width: 220px; --gap: var(--vs-s);">
+		<article class="stat-card">
+			<small>Poll</small>
+			<strong>{poll.title}</strong>
+		</article>
+		<article class="stat-card">
+			<small>Status</small>
+			<strong>{poll.status}</strong>
+		</article>
+		<article class="stat-card">
+			<small>Phase</small>
+			<strong>{poll.activePhase}</strong>
+		</article>
+	</section>
 
 	{#if activeQuestion}
 		<section class="card">
-			<h3>Question {activeQuestion.order}</h3>
-			<p>{activeQuestion.text}</p>
+			<div class="card-body stack" style="--gap: var(--vs-m);">
+				<div class="stack" style="--gap: var(--vs-xs);">
+					<h3 class="h5 no-margin">Question {activeQuestion.order}</h3>
+					<p class="no-margin">{activeQuestion.text}</p>
+				</div>
 
-			<div class="answers" role="radiogroup" aria-label="Answer choices">
-				{#each activeQuestion.answers ?? [] as answer (answer.id)}
+				<div
+					class="stack"
+					role="radiogroup"
+					aria-label="Answer choices"
+					style="--gap: var(--vs-xs);"
+				>
+					{#each activeQuestion.answers ?? [] as answer (answer.id)}
+						<button
+							type="button"
+							class={`button full ${selectedAnswerId === answer.id ? 'primary' : 'ghost'}`}
+							onclick={() => {
+								selectedAnswerId = answer.id;
+							}}
+						>
+							<span class="split full">
+								<span>{answer.text}</span>
+								{#if revealFullResults}
+									<small>{answerCount(answer.id)} votes</small>
+								{/if}
+							</span>
+						</button>
+					{/each}
+				</div>
+
+				<div class="cluster" style="--gap: var(--vs-xs); align-items: center;">
 					<button
-						type="button"
-						class:selected={selectedAnswerId === answer.id}
-						onclick={() => {
-							selectedAnswerId = answer.id;
-						}}
+						class="button primary"
+						disabled={!canVote || !selectedAnswerId || isCastingVote}
+						onclick={castVote}
 					>
-						<span>{answer.text}</span>
-						{#if revealFullResults}
-							<small>{answerCount(answer.id)} votes</small>
+						{#if isCastingVote}
+							Submitting…
+						{:else if myActiveVote}
+							Update vote
+						{:else}
+							Submit vote
 						{/if}
 					</button>
-				{/each}
-			</div>
 
-			<div class="actions">
-				<button disabled={!canVote || !selectedAnswerId || isCastingVote} onclick={castVote}>
-					{#if isCastingVote}
-						Submitting…
-					{:else if myActiveVote}
-						Update vote
-					{:else}
-						Submit vote
+					{#if !canVote}
+						<span class="tag muted">Voting is currently locked.</span>
 					{/if}
-				</button>
+				</div>
+			</div>
+		</section>
 
-				{#if !canVote}
-					<p class="meta">Voting is currently locked.</p>
+		<section class="card">
+			<div class="card-body stack" style="--gap: var(--vs-xs);">
+				<h3 class="h5 no-margin">Participation</h3>
+				<p class="no-margin">{activeStats?.totalVotes ?? 0} responses received</p>
+				{#if revealFullResults}
+					<p class="text-muted no-margin">Answer breakdown is now visible.</p>
+				{:else}
+					<p class="text-muted no-margin">Answer choices stay hidden until reveal.</p>
 				{/if}
 			</div>
 		</section>
-
-		<section class="card stats">
-			<h3>Participation</h3>
-			<p>{activeStats?.totalVotes ?? 0} responses received</p>
-			{#if revealFullResults}
-				<p class="meta">Answer breakdown is now visible.</p>
-			{:else}
-				<p class="meta">Answer choices stay hidden until reveal.</p>
-			{/if}
-		</section>
 	{:else}
-		<div class="card">
-			<h3>Waiting for the host</h3>
+		<div class="callout info">
+			<p><strong>Waiting for the host</strong></p>
 			<p>The next question will appear here once it's live.</p>
 		</div>
 	{/if}
 {/if}
 
 {#if errorMessage}
-	<p class="error">{errorMessage}</p>
+	<div class="callout error">
+		<p>{errorMessage}</p>
+	</div>
 {/if}
-
-<style>
-	.card {
-		padding: 1rem;
-		border: 1px solid color-mix(in srgb, canvastext 15%, transparent);
-		border-radius: 0.85rem;
-		display: grid;
-		gap: 0.75rem;
-		background: color-mix(in srgb, canvas 92%, canvastext 8%);
-	}
-
-	h2,
-	h3,
-	p {
-		margin: 0;
-	}
-
-	.meta {
-		opacity: 0.72;
-		font-size: 0.93rem;
-	}
-
-	.answers {
-		display: grid;
-		gap: 0.6rem;
-	}
-
-	.answers button {
-		padding: 0.75rem 0.85rem;
-		border: 1px solid color-mix(in srgb, canvastext 20%, transparent);
-		border-radius: 0.75rem;
-		background: canvas;
-		text-align: left;
-		display: flex;
-		justify-content: space-between;
-		gap: 0.6rem;
-		align-items: center;
-		font: inherit;
-		cursor: pointer;
-	}
-
-	.answers button.selected {
-		border-color: color-mix(in srgb, #5a67ff 60%, canvastext 40%);
-		background: color-mix(in srgb, #5a67ff 12%, canvas 88%);
-	}
-
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.7rem;
-		align-items: center;
-	}
-
-	.actions button {
-		padding: 0.65rem 0.95rem;
-		border-radius: 999px;
-		border: none;
-		background: #5a67ff;
-		color: white;
-		font: inherit;
-		cursor: pointer;
-	}
-
-	.actions button:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-
-	.stats {
-		background: color-mix(in srgb, #5a67ff 8%, canvas 92%);
-	}
-
-	.error {
-		color: #d11f4f;
-		font-weight: 600;
-	}
-</style>

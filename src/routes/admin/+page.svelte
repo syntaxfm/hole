@@ -114,15 +114,17 @@
 									<td class="text-end">
 										<div class="cluster" style="--gap: var(--vs-xs); justify-content: flex-end;">
 											<a class="button mini" href={`/admin/poll/${poll.id}/drive`}>Drive</a>
-											<a class="button mini" href={`/poll/${poll.id}`} target="_blank" rel="noreferrer"
-												>Participant</a
+											<a
+												class="button mini"
+												href={`/poll/${poll.id}`}
+												target="_blank"
+												rel="noreferrer">Participant</a
 											>
 											<a
 												class="button mini"
 												href={`/embed/poll/${poll.id}`}
 												target="_blank"
-												rel="noreferrer"
-												>Embed</a
+												rel="noreferrer">Embed</a
 											>
 										</div>
 									</td>

@@ -48,112 +48,61 @@
 </script>
 
 {#if query.isLoading}
-	<p>Loading embed…</p>
+	<p class="text-muted">Loading embed…</p>
 {:else if query.error}
-	<p class="error">{query.error.message}</p>
+	<div class="callout error">
+		<p>{query.error.message}</p>
+	</div>
 {:else if !poll}
-	<div class="card">
-		<h2>Poll unavailable</h2>
+	<div class="callout warning">
+		<p><strong>Poll unavailable</strong></p>
 		<p>Embed is only visible when a poll is live or closed.</p>
 	</div>
 {:else if !displayQuestion}
-	<div class="card">
-		<h2>{poll.title}</h2>
-		<p>Waiting for a question…</p>
-	</div>
+	<section class="card">
+		<div class="card-body stack" style="--gap: var(--vs-xs);">
+			<h2 class="h3 no-margin">{poll.title}</h2>
+			<p class="text-muted no-margin">Waiting for a question…</p>
+		</div>
+	</section>
 {:else}
-	<div class="card">
-		<p class="pill">{poll.title}</p>
-		<h2>{displayQuestion.text}</h2>
-		<p class="meta">Responses: {stats?.totalVotes ?? 0}</p>
-	</div>
+	<section class="card gradient-surface">
+		<div class="card-body stack" style="--gap: var(--vs-s);">
+			<span class="chip">{poll.title}</span>
+			<h2 class="h3 no-margin">{displayQuestion.text}</h2>
+			<p class="text-muted no-margin">Responses: {stats?.totalVotes ?? 0}</p>
+		</div>
+	</section>
 
 	{#if canShowBreakdown}
-		<section class="card answers">
-			{#each displayQuestion.answers ?? [] as answer (answer.id)}
-				<div class="answer-row">
-					<div class="label-row">
-						<span>{answer.text}</span>
-						<strong>{answerPercentage(answer.id)}%</strong>
-					</div>
-					<div class="meter" role="presentation">
-						<div style:width={`${answerPercentage(answer.id)}%`}></div>
-					</div>
-					<small>{answerCount(answer.id)} votes</small>
+		<section class="card">
+			<div class="card-body stack" style="--gap: var(--vs-s);">
+				<h3 class="h5 no-margin">Answer breakdown</h3>
+				<div class="table">
+					<table>
+						<thead>
+							<tr>
+								<th>Answer</th>
+								<th class="text-end">Votes</th>
+								<th class="text-end">Share</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each displayQuestion.answers ?? [] as answer (answer.id)}
+								<tr>
+									<td>{answer.text}</td>
+									<td class="text-end">{answerCount(answer.id)}</td>
+									<td class="text-end">{answerPercentage(answer.id)}%</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
 				</div>
-			{/each}
+			</div>
 		</section>
 	{:else}
-		<div class="card">
+		<div class="callout info">
 			<p>Answer breakdown hidden until reveal.</p>
 		</div>
 	{/if}
 {/if}
-
-<style>
-	.card {
-		max-width: 72rem;
-		margin: 0 auto 1rem;
-		padding: 1rem;
-		border-radius: 0.9rem;
-		background: color-mix(in srgb, #11162a 88%, white 12%);
-		border: 1px solid color-mix(in srgb, white 14%, transparent);
-		display: grid;
-		gap: 0.75rem;
-	}
-
-	h2,
-	p {
-		margin: 0;
-	}
-
-	.pill {
-		display: inline-flex;
-		width: fit-content;
-		padding: 0.3rem 0.65rem;
-		border-radius: 999px;
-		background: color-mix(in srgb, #5a67ff 24%, transparent);
-		font-size: 0.82rem;
-		letter-spacing: 0.01em;
-	}
-
-	.meta {
-		opacity: 0.82;
-	}
-
-	.answers {
-		gap: 0.85rem;
-	}
-
-	.answer-row {
-		display: grid;
-		gap: 0.36rem;
-	}
-
-	.label-row {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.meter {
-		height: 0.65rem;
-		border-radius: 999px;
-		overflow: hidden;
-		background: color-mix(in srgb, white 18%, transparent);
-	}
-
-	.meter > div {
-		height: 100%;
-		background: linear-gradient(90deg, #5a67ff, #7f8bff);
-	}
-
-	small {
-		opacity: 0.74;
-	}
-
-	.error {
-		color: #ff7e9f;
-		font-weight: 600;
-	}
-</style>

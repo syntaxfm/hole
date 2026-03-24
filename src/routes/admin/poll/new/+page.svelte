@@ -121,49 +121,56 @@
 </script>
 
 {#if auth.isLoading}
-	<p>Checking session…</p>
+	<p class="text-muted">Checking session…</p>
 {:else if !auth.user}
-	<p>Sign in first to create a poll.</p>
+	<div class="callout warning">
+		<p>Sign in first to create a poll.</p>
+	</div>
 {:else}
 	<form
-		class="create-poll"
+		class="stack"
+		style="--gap: var(--vs-l);"
 		onsubmit={(event) => {
 			event.preventDefault();
 			void submitCreatePoll();
 		}}
 	>
-		<section class="panel">
-			<h2>Create a new poll</h2>
-			<p class="meta">{questions.length} questions · {totalAnswers} answers</p>
+		<section class="card">
+			<div class="card-body stack" style="--gap: var(--vs-m);">
+				<div class="split">
+					<h2 class="h3 no-margin">Create a new poll</h2>
+					<span class="chip">{questions.length} questions · {totalAnswers} answers</span>
+				</div>
 
-			<label class="field">
-				<span>Poll title</span>
-				<input bind:value={title} placeholder="e.g. JS Nation Live Poll" />
-			</label>
+				<label class="row" for="poll-title-input">
+					<span>Poll title</span>
+					<input id="poll-title-input" bind:value={title} placeholder="e.g. JS Nation Live Poll" />
+				</label>
+			</div>
 		</section>
 
-		<section class="panel settings">
-			<h3>Session settings</h3>
+		<section class="card">
+			<div class="card-body stack" style="--gap: var(--vs-s);">
+				<h3 class="h5 no-margin">Session settings</h3>
 
-			<label>
-				<input type="checkbox" bind:checked={allowRevoteWhileCollecting} />
-				<span>Allow revote while collecting</span>
-			</label>
+				<label class="form-option-row">
+					<input type="checkbox" bind:checked={allowRevoteWhileCollecting} />
+					<span>Allow revote while collecting</span>
+				</label>
 
-			<label>
-				<input type="checkbox" bind:checked={startLive} />
-				<span>Start live immediately on first question</span>
-			</label>
+				<label class="form-option-row">
+					<input type="checkbox" bind:checked={startLive} />
+					<span>Start live immediately on first question</span>
+				</label>
 
-			<label>
-				<input type="checkbox" bind:checked={isEmbedPublic} />
-				<span>Public embed enabled</span>
-			</label>
+				<label class="form-option-row">
+					<input type="checkbox" bind:checked={isEmbedPublic} />
+					<span>Public embed enabled</span>
+				</label>
 
-			<div class="field">
-				<span>Participant results visibility</span>
-				<div class="segmented">
-					<label>
+				<fieldset class="stack" style="--gap: var(--vs-xs);">
+					<legend class="text-muted">Participant results visibility</legend>
+					<label class="form-option-row">
 						<input
 							type="radio"
 							name="participant-results-mode"
@@ -175,7 +182,7 @@
 						/>
 						<span>Count only (default)</span>
 					</label>
-					<label>
+					<label class="form-option-row">
 						<input
 							type="radio"
 							name="participant-results-mode"
@@ -187,247 +194,90 @@
 						/>
 						<span>Show full breakdown after reveal</span>
 					</label>
-				</div>
+				</fieldset>
 			</div>
 		</section>
 
-		<section class="panel question-list">
-			<div class="question-list-header">
-				<h3>Questions</h3>
-				<button type="button" onclick={addQuestion}>+ Add question</button>
+		<section class="stack" style="--gap: var(--vs-s);">
+			<div class="split">
+				<h3 class="h5 no-margin">Questions</h3>
+				<button class="button" type="button" onclick={addQuestion}>+ Add question</button>
 			</div>
 
 			{#each questions as question, questionIndex (question.localId)}
-				<article class="question-card">
-					<div class="question-card-header">
-						<h4>Question {questionIndex + 1}</h4>
-						<button
-							type="button"
-							disabled={questions.length <= 1}
-							onclick={() => removeQuestion(question.localId)}
-						>
-							Remove
-						</button>
-					</div>
-
-					<label class="field">
-						<span>Prompt</span>
-						<textarea bind:value={question.text} placeholder="Ask your multiple-choice question"
-						></textarea>
-					</label>
-
-					<div class="answers">
-						<div class="answers-header">
-							<h5>Answers</h5>
-							<button type="button" onclick={() => addAnswer(question.localId)}>
-								+ Add answer
+				<article class="card">
+					<div class="card-body stack" style="--gap: var(--vs-s);">
+						<div class="split">
+							<h4 class="h5 no-margin">Question {questionIndex + 1}</h4>
+							<button
+								class="button mini ghost"
+								type="button"
+								disabled={questions.length <= 1}
+								onclick={() => removeQuestion(question.localId)}
+							>
+								Remove
 							</button>
 						</div>
 
-						{#each question.answers as answer, answerIndex (answer.localId)}
-							<div class="answer-row">
-								<label>
-									<span class="visually-hidden">Answer {answerIndex + 1} text</span>
-									<input bind:value={answer.text} placeholder={`Answer ${answerIndex + 1}`} />
-								</label>
+						<label class="row" for={`question-${question.localId}`}>
+							<span>Prompt</span>
+							<textarea
+								id={`question-${question.localId}`}
+								bind:value={question.text}
+								placeholder="Ask your multiple-choice question"
+							></textarea>
+						</label>
 
-								<label>
-									<span class="visually-hidden">Answer {answerIndex + 1} color</span>
-									<input type="color" bind:value={answer.color} />
-								</label>
-
+						<div class="stack" style="--gap: var(--vs-xs);">
+							<div class="split">
+								<h5 class="no-margin fs-s">Answers</h5>
 								<button
+									class="button mini"
 									type="button"
-									disabled={question.answers.length <= 2}
-									onclick={() => removeAnswer(question.localId, answer.localId)}
+									onclick={() => addAnswer(question.localId)}
 								>
-									Remove
+									+ Add answer
 								</button>
 							</div>
-						{/each}
+
+							{#each question.answers as answer, answerIndex (answer.localId)}
+								<div class="cluster" style="--gap: var(--vs-xs); align-items: end;">
+									<label class="stack full" style="--gap: var(--vs-xs);">
+										<span class="visually-hidden">Answer {answerIndex + 1} text</span>
+										<input bind:value={answer.text} placeholder={`Answer ${answerIndex + 1}`} />
+									</label>
+
+									<label class="stack" style="--gap: var(--vs-xs);">
+										<span class="visually-hidden">Answer {answerIndex + 1} color</span>
+										<input type="color" bind:value={answer.color} />
+									</label>
+
+									<button
+										class="button mini ghost"
+										type="button"
+										disabled={question.answers.length <= 2}
+										onclick={() => removeAnswer(question.localId, answer.localId)}
+									>
+										Remove
+									</button>
+								</div>
+							{/each}
+						</div>
 					</div>
 				</article>
 			{/each}
 		</section>
 
-		<footer class="panel footer-actions">
-			<button type="submit" disabled={isSubmitting}>
+		<div class="form-actions">
+			<button class="button primary" type="submit" disabled={isSubmitting}>
 				{isSubmitting ? 'Creating poll…' : 'Create poll and open drive'}
 			</button>
-		</footer>
+		</div>
 	</form>
 {/if}
 
 {#if errorMessage}
-	<p class="error">{errorMessage}</p>
+	<div class="callout error">
+		<p>{errorMessage}</p>
+	</div>
 {/if}
-
-<style>
-	.create-poll {
-		display: grid;
-		gap: 1rem;
-	}
-
-	.panel {
-		border: 1px solid color-mix(in srgb, canvastext 14%, transparent);
-		border-radius: 0.9rem;
-		padding: 1rem;
-		display: grid;
-		gap: 0.8rem;
-		background: color-mix(in srgb, canvas 95%, canvastext 5%);
-	}
-
-	h2,
-	h3,
-	h4,
-	h5,
-	p {
-		margin: 0;
-	}
-
-	.meta {
-		opacity: 0.76;
-		font-size: 0.92rem;
-	}
-
-	.field {
-		display: grid;
-		gap: 0.4rem;
-	}
-
-	input,
-	textarea,
-	button {
-		font: inherit;
-	}
-
-	input,
-	textarea {
-		padding: 0.65rem 0.75rem;
-		border-radius: 0.65rem;
-		border: 1px solid color-mix(in srgb, canvastext 20%, transparent);
-		background: canvas;
-	}
-
-	textarea {
-		min-height: 4.5rem;
-		resize: vertical;
-	}
-
-	button {
-		padding: 0.55rem 0.85rem;
-		border-radius: 999px;
-		border: 1px solid color-mix(in srgb, canvastext 20%, transparent);
-		background: canvas;
-		cursor: pointer;
-	}
-
-	button:disabled {
-		opacity: 0.48;
-		cursor: not-allowed;
-	}
-
-	.settings {
-		gap: 0.65rem;
-	}
-
-	.settings label {
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
-	}
-
-	.segmented {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.segmented label {
-		padding: 0.45rem 0.55rem;
-		border: 1px solid color-mix(in srgb, canvastext 12%, transparent);
-		border-radius: 0.65rem;
-	}
-
-	.question-list {
-		gap: 0.9rem;
-	}
-
-	.question-list-header,
-	.question-card-header,
-	.answers-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 0.7rem;
-		flex-wrap: wrap;
-	}
-
-	.question-card {
-		display: grid;
-		gap: 0.7rem;
-		padding: 0.85rem;
-		border-radius: 0.8rem;
-		border: 1px solid color-mix(in srgb, canvastext 10%, transparent);
-		background: color-mix(in srgb, #5a67ff 5%, canvas 95%);
-	}
-
-	.answers {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.answer-row {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto auto;
-		gap: 0.5rem;
-		align-items: center;
-	}
-
-	.answer-row input[type='color'] {
-		padding: 0.2rem;
-		width: 2.6rem;
-		height: 2.2rem;
-	}
-
-	.footer-actions {
-		display: flex;
-		justify-content: flex-end;
-	}
-
-	.footer-actions button {
-		background: #5a67ff;
-		color: #fff;
-		border-color: transparent;
-	}
-
-	.error {
-		color: #d11f4f;
-		font-weight: 600;
-	}
-
-	.visually-hidden {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
-	}
-
-	@media (max-width: 700px) {
-		.answer-row {
-			grid-template-columns: 1fr;
-		}
-
-		.footer-actions {
-			justify-content: stretch;
-		}
-
-		.footer-actions button {
-			width: 100%;
-		}
-	}
-</style>

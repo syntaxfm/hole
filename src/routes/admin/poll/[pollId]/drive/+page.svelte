@@ -178,186 +178,133 @@
 		const counts = (stats?.countsByAnswer ?? {}) as Record<string, number>;
 		return Number(counts[answerId] ?? 0);
 	}
+
+	function questionStatusClass(status: string): 'info' | 'warning' | 'success' | 'muted' {
+		if (status === 'active') return 'info';
+		if (status === 'done') return 'success';
+		if (status === 'queued') return 'warning';
+		return 'muted';
+	}
 </script>
 
 {#if auth.isLoading}
-	<p>Checking auth…</p>
+	<p class="text-muted">Checking auth…</p>
 {:else if !auth.user}
-	<p>Sign in to access this page.</p>
+	<div class="callout warning">
+		<p>Sign in to access this page.</p>
+	</div>
 {:else if query.isLoading}
-	<p>Loading poll data…</p>
+	<p class="text-muted">Loading poll data…</p>
 {:else if query.error}
-	<p class="error">{query.error.message}</p>
+	<div class="callout error">
+		<p>{query.error.message}</p>
+	</div>
 {:else if !poll}
-	<div class="card">
-		<h3>Poll not found</h3>
+	<div class="callout warning">
+		<p><strong>Poll not found</strong></p>
 		<p>You may not own this poll, or the id is invalid.</p>
 	</div>
 {:else}
-	<section class="card status-grid">
-		<div>
-			<h3>{poll.title}</h3>
-			<p class="meta">Status: {poll.status} · Phase: {poll.activePhase}</p>
-		</div>
-		<div>
-			<p class="meta">Participants connected: {participantSessions.length}</p>
-			<p class="meta">Answered current: {respondedCount}</p>
-		</div>
-	</section>
-
-	<section class="card actions">
-		<button disabled={pendingAction !== null || !sortedQuestions.length} onclick={startPoll}>
-			{pendingAction === 'start' ? 'Starting…' : 'Start / restart'}
-		</button>
-		<button
-			disabled={pendingAction !== null || !activeQuestion || poll.activePhase !== 'collecting'}
-			onclick={lockQuestion}
-		>
-			{pendingAction === 'lock' ? 'Locking…' : 'Lock in'}
-		</button>
-		<button
-			disabled={pendingAction !== null || !activeQuestion || poll.activePhase === 'revealed'}
-			onclick={revealAnswers}
-		>
-			{pendingAction === 'reveal' ? 'Revealing…' : 'Reveal answers'}
-		</button>
-		<button disabled={pendingAction !== null || !activeQuestion} onclick={nextQuestion}>
-			{pendingAction === 'next' ? 'Advancing…' : 'Next question'}
-		</button>
-		<button class="danger" disabled={pendingAction !== null} onclick={closePoll}>
-			{pendingAction === 'close' ? 'Closing…' : 'Close poll'}
-		</button>
+	<section class="layout-card" style="--min-card-width: 220px; --gap: var(--vs-s);">
+		<article class="stat-card">
+			<small>Poll</small>
+			<strong>{poll.title}</strong>
+			<span class="tag info">{poll.status}</span>
+		</article>
+		<article class="stat-card">
+			<small>Phase</small>
+			<strong>{poll.activePhase}</strong>
+		</article>
+		<article class="stat-card">
+			<small>Participants connected</small>
+			<strong>{participantSessions.length}</strong>
+		</article>
+		<article class="stat-card">
+			<small>Answered current question</small>
+			<strong>{respondedCount}</strong>
+		</article>
 	</section>
 
 	<section class="card">
-		<h3>Questions</h3>
-		<div class="question-list">
-			{#each sortedQuestions as question (question.id)}
-				<article class:active={question.id === activeQuestion?.id}>
-					<div class="heading">
-						<strong>Q{question.order}</strong>
-						<span>{question.text}</span>
-						<small>{question.status}</small>
+		<div class="card-body stack" style="--gap: var(--vs-s);">
+			<h3 class="h5 no-margin">Drive controls</h3>
+			<div class="cluster" style="--gap: var(--vs-xs);">
+				<button
+					class="button primary"
+					disabled={pendingAction !== null || !sortedQuestions.length}
+					onclick={startPoll}
+				>
+					{pendingAction === 'start' ? 'Starting…' : 'Start / restart'}
+				</button>
+				<button
+					class="button"
+					disabled={pendingAction !== null || !activeQuestion || poll.activePhase !== 'collecting'}
+					onclick={lockQuestion}
+				>
+					{pendingAction === 'lock' ? 'Locking…' : 'Lock in'}
+				</button>
+				<button
+					class="button"
+					disabled={pendingAction !== null || !activeQuestion || poll.activePhase === 'revealed'}
+					onclick={revealAnswers}
+				>
+					{pendingAction === 'reveal' ? 'Revealing…' : 'Reveal answers'}
+				</button>
+				<button
+					class="button"
+					disabled={pendingAction !== null || !activeQuestion}
+					onclick={nextQuestion}
+				>
+					{pendingAction === 'next' ? 'Advancing…' : 'Next question'}
+				</button>
+				<button class="button error" disabled={pendingAction !== null} onclick={closePoll}>
+					{pendingAction === 'close' ? 'Closing…' : 'Close poll'}
+				</button>
+			</div>
+		</div>
+	</section>
+
+	<section class="stack" style="--gap: var(--vs-s);">
+		<h3 class="h5 no-margin">Questions</h3>
+		{#each sortedQuestions as question (question.id)}
+			<article class="card" class:featured={question.id === activeQuestion?.id}>
+				<div class="card-body stack" style="--gap: var(--vs-s);">
+					<div class="split">
+						<div class="cluster" style="--gap: var(--vs-xs); align-items: center;">
+							<span class="chip">Q{question.order}</span>
+							<strong>{question.text}</strong>
+						</div>
+						<span class={`tag ${questionStatusClass(String(question.status ?? 'queued'))}`}>
+							{question.status}
+						</span>
 					</div>
 
-					<div class="answers">
-						{#each question.answers ?? [] as answer (answer.id)}
-							<div class="answer-row">
-								<span>{answer.text}</span>
-								<span>{answerCount(question, answer.id)}</span>
-							</div>
-						{/each}
+					<div class="table">
+						<table>
+							<thead>
+								<tr>
+									<th>Answer</th>
+									<th class="text-end">Votes</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each question.answers ?? [] as answer (answer.id)}
+									<tr>
+										<td>{answer.text}</td>
+										<td class="text-end">{answerCount(question, answer.id)}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
 					</div>
-				</article>
-			{/each}
-		</div>
+				</div>
+			</article>
+		{/each}
 	</section>
 {/if}
 
 {#if actionError}
-	<p class="error">{actionError}</p>
+	<div class="callout error">
+		<p>{actionError}</p>
+	</div>
 {/if}
-
-<style>
-	.card {
-		padding: 1rem;
-		border-radius: 0.85rem;
-		border: 1px solid color-mix(in srgb, canvastext 14%, transparent);
-		display: grid;
-		gap: 0.8rem;
-	}
-
-	h3,
-	p {
-		margin: 0;
-	}
-
-	.meta {
-		opacity: 0.75;
-		font-size: 0.93rem;
-	}
-
-	.status-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-		gap: 0.9rem;
-	}
-
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.6rem;
-	}
-
-	button {
-		padding: 0.58rem 0.85rem;
-		border-radius: 999px;
-		border: 1px solid color-mix(in srgb, canvastext 18%, transparent);
-		background: canvas;
-		font: inherit;
-		cursor: pointer;
-	}
-
-	button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	button.danger {
-		border-color: color-mix(in srgb, #d11f4f 60%, transparent);
-		color: #d11f4f;
-	}
-
-	.question-list {
-		display: grid;
-		gap: 0.8rem;
-	}
-
-	article {
-		border: 1px solid color-mix(in srgb, canvastext 10%, transparent);
-		border-radius: 0.75rem;
-		padding: 0.7rem;
-		display: grid;
-		gap: 0.55rem;
-	}
-
-	article.active {
-		border-color: color-mix(in srgb, #5a67ff 60%, transparent);
-		background: color-mix(in srgb, #5a67ff 10%, canvas 90%);
-	}
-
-	.heading {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		align-items: center;
-		gap: 0.6rem;
-	}
-
-	.heading strong {
-		font-size: 0.82rem;
-		opacity: 0.75;
-	}
-
-	.heading small {
-		opacity: 0.7;
-		text-transform: uppercase;
-		font-size: 0.74rem;
-	}
-
-	.answers {
-		display: grid;
-		gap: 0.35rem;
-	}
-
-	.answer-row {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.55rem;
-		font-size: 0.92rem;
-	}
-
-	.error {
-		color: #d11f4f;
-		font-weight: 600;
-	}
-</style>
