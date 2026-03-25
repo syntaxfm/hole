@@ -38,6 +38,36 @@ export type AddQuestionInput = {
 	order: number;
 };
 
+export type UpdatePollSettingsInput = {
+	pollId: string;
+	title: string;
+	allowRevoteWhileCollecting: boolean;
+	participantResultsMode: ParticipantResultsMode;
+	isEmbedPublic: boolean;
+};
+
+export type UpdateQuestionInput = {
+	questionId: string;
+	text: string;
+	order: number;
+};
+
+export type CreateAnswerInput = {
+	pollId: string;
+	questionId: string;
+	pollOwnerId: string;
+	text: string;
+	color?: string;
+	order: number;
+};
+
+export type UpdateAnswerInput = {
+	answerId: string;
+	text: string;
+	color?: string;
+	order: number;
+};
+
 export type CastOrRevoteInput = {
 	pollId: string;
 	questionId: string;
@@ -90,6 +120,11 @@ export type AdvanceQuestionInput = {
 export type ClosePollInput = {
 	pollId: string;
 	currentQuestionId?: string;
+};
+
+export type SetParticipantResultsModeInput = {
+	pollId: string;
+	participantResultsMode: ParticipantResultsMode;
 };
 
 export type CreateParticipantSessionInput = {
@@ -323,7 +358,102 @@ export function buildAddQuestionTx(input: AddQuestionInput): {
 }
 
 /**
- * 3) Create vote (first cast) or revote (update answer) for one user.
+ * 3) Update poll-level editor settings.
+ */
+export function buildUpdatePollSettingsTx(input: UpdatePollSettingsInput): AppTxChunk[] {
+	return [
+		db.tx.polls[input.pollId].update(
+			{
+				title: requireNonEmpty(input.title, 'Poll title'),
+				allowRevoteWhileCollecting: input.allowRevoteWhileCollecting,
+				participantResultsMode: input.participantResultsMode,
+				isEmbedPublic: input.isEmbedPublic,
+				updatedAt: nowTs()
+			},
+			{ upsert: false }
+		)
+	];
+}
+
+/**
+ * 4) Update one existing question in place.
+ */
+export function buildUpdateQuestionTx(input: UpdateQuestionInput): AppTxChunk[] {
+	return [
+		db.tx.questions[input.questionId].update(
+			{
+				text: requireNonEmpty(input.text, 'Question text'),
+				order: input.order,
+				updatedAt: nowTs()
+			},
+			{ upsert: false }
+		)
+	];
+}
+
+/**
+ * 5) Create one answer and link it to an existing question.
+ */
+export function buildCreateAnswerTx(input: CreateAnswerInput): {
+	answerId: string;
+	tx: AppTxChunk[];
+} {
+	const answerId = id();
+	const createdAt = nowTs();
+	const text = requireNonEmpty(input.text, 'Answer text');
+	const color = input.color?.trim();
+
+	return {
+		answerId,
+		tx: [
+			db.tx.answers[answerId].create({
+				pollId: input.pollId,
+				questionId: input.questionId,
+				pollOwnerId: input.pollOwnerId,
+				text,
+				order: input.order,
+				...(color ? { color } : {}),
+				createdAt
+			}),
+			db.tx.answers[answerId].link({ question: input.questionId })
+		]
+	};
+}
+
+/**
+ * 6) Update one existing answer in place.
+ */
+export function buildUpdateAnswerTx(input: UpdateAnswerInput): AppTxChunk[] {
+	const color = input.color?.trim();
+
+	return [
+		db.tx.answers[input.answerId].update(
+			{
+				text: requireNonEmpty(input.text, 'Answer text'),
+				order: input.order,
+				...(color ? { color } : {})
+			},
+			{ upsert: false }
+		)
+	];
+}
+
+/**
+ * 7) Delete one question (linked answers/votes/stats cascade via schema links).
+ */
+export function buildDeleteQuestionTx(questionId: string): AppTxChunk[] {
+	return [db.tx.questions[questionId].delete()];
+}
+
+/**
+ * 8) Delete one answer.
+ */
+export function buildDeleteAnswerTx(answerId: string): AppTxChunk[] {
+	return [db.tx.answers[answerId].delete()];
+}
+
+/**
+ * 9) Create vote (first cast) or revote (update answer) for one user.
  */
 export function buildCastOrRevoteTx(input: CastOrRevoteInput): AppTxChunk[] {
 	const updatedAt = nowTs();
@@ -579,6 +709,20 @@ export function buildClosePollTx(input: ClosePollInput): AppTxChunk[] {
 	}
 
 	return tx;
+}
+
+export function buildSetParticipantResultsModeTx(
+	input: SetParticipantResultsModeInput
+): AppTxChunk[] {
+	return [
+		db.tx.polls[input.pollId].update(
+			{
+				participantResultsMode: input.participantResultsMode,
+				updatedAt: nowTs()
+			},
+			{ upsert: false }
+		)
+	];
 }
 
 /**

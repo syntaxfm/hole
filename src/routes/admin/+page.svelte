@@ -113,6 +113,7 @@
 									<td>{pollResponseCount(poll)}</td>
 									<td class="text-end">
 										<a class="button mini" href={`/admin/poll/${poll.id}/drive`}>Drive</a>
+										<a class="button mini" href={`/admin/poll/${poll.id}/edit`}>Edit</a>
 										<a
 											class="button mini"
 											href={`/poll/${poll.id}`}

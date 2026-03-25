@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { base } from '$app/paths';
+
 	import { db } from '$lib/instant/client';
 	import { adminDriveQuery } from '$lib/instant/queries';
 	import {
@@ -29,6 +32,20 @@
 	);
 	const votes = $derived((query.data?.votes ?? []) as Array<Record<string, any>>);
 
+	const participantPath = $derived(`${base}/poll/${pollId}`);
+	const embedPath = $derived(`${base}/embed/poll/${pollId}`);
+	const editPath = $derived(`${base}/admin/poll/${pollId}/edit`);
+	const shareOrigin = $derived(browser ? window.location.origin : '');
+	const joinUrl = $derived(
+		shareOrigin ? new URL(participantPath, shareOrigin).toString() : participantPath
+	);
+	const embedUrl = $derived(shareOrigin ? new URL(embedPath, shareOrigin).toString() : embedPath);
+	const joinQrImageUrl = $derived(
+		shareOrigin
+			? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=${encodeURIComponent(joinUrl)}`
+			: null
+	);
+
 	const activeVotes = $derived(
 		activeQuestion
 			? votes.filter((vote) => vote.questionId === activeQuestion.id)
@@ -50,6 +67,7 @@
 
 	let pendingAction = $state<string | null>(null);
 	let actionError = $state<string | null>(null);
+	let copyNotice = $state<string | null>(null);
 	let isRecomputingStats = $state(false);
 	let lastStatsRecomputeKey = $state<string | null>(null);
 
@@ -164,6 +182,21 @@
 		);
 	}
 
+	async function copyToClipboard(value: string, label: string) {
+		if (!browser || !navigator.clipboard) {
+			copyNotice = 'Clipboard is not available in this browser.';
+			return;
+		}
+
+		try {
+			await navigator.clipboard.writeText(value);
+			copyNotice = `${label} copied.`;
+		} catch (error) {
+			copyNotice =
+				error instanceof Error ? error.message : `Unable to copy ${label.toLowerCase()}.`;
+		}
+	}
+
 	function getQuestionStats(question: Record<string, any> | null) {
 		if (!question?.stats) return null;
 		return Array.isArray(question.stats) ? question.stats[0] : question.stats;
@@ -223,6 +256,57 @@
 			<small>Answered current question</small>
 			<strong>{respondedCount}</strong>
 		</article>
+	</section>
+
+	<section class="box">
+		<div class="stack">
+			<div class="split">
+				<h3 class="h5 no-margin">Join and share</h3>
+				<a class="button mini" href={editPath}>Edit poll</a>
+			</div>
+
+			<label class="stack">
+				<span class="text-muted">Participant join URL</span>
+				<input readonly value={joinUrl} />
+			</label>
+			<div class="cluster">
+				<button class="button" type="button" onclick={() => copyToClipboard(joinUrl, 'Join link')}>
+					Copy join link
+				</button>
+				<a class="button" href={participantPath} target="_blank" rel="noreferrer">
+					Open participant view
+				</a>
+			</div>
+
+			<label class="stack">
+				<span class="text-muted">Embed URL</span>
+				<input readonly value={embedUrl} />
+			</label>
+			<div class="cluster">
+				<button
+					class="button"
+					type="button"
+					onclick={() => copyToClipboard(embedUrl, 'Embed link')}
+				>
+					Copy embed link
+				</button>
+				<a class="button" href={embedPath} target="_blank" rel="noreferrer">Open embed</a>
+			</div>
+
+			<div class="cluster">
+				{#if joinQrImageUrl}
+					<img
+						src={joinQrImageUrl}
+						alt="QR code that opens the participant join link"
+						width="180"
+						height="180"
+					/>
+				{:else}
+					<p class="text-muted no-margin">Loading QR code…</p>
+				{/if}
+				<p class="text-muted no-margin">Scan the QR code to join this poll instantly.</p>
+			</div>
+		</div>
 	</section>
 
 	<section class="box">
@@ -301,6 +385,12 @@
 			</article>
 		{/each}
 	</section>
+{/if}
+
+{#if copyNotice}
+	<div class="callout info">
+		<p>{copyNotice}</p>
+	</div>
 {/if}
 
 {#if actionError}

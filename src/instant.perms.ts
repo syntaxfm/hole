@@ -122,15 +122,14 @@ const rules = {
 	votes: {
 		allow: {
 			view: 'isPollOwner || isVoter',
-			create:
-				'isVoter && isCollecting && isQuestionActive && questionBelongsToPoll && answerBelongsToQuestion',
+			create: 'isVoter',
 			update:
 				'isVoter && isCollecting && isQuestionActive && onlyRevoteFields && immutableVoteScope && answerBelongsToQuestion',
 			delete: 'isPollOwner',
 			link: {
-				poll: "isVoter && isCollecting && data.pollId in data.ref('poll.id')",
+				poll: "isVoter && isCollecting && data.pollId in data.ref('poll.id') && data.pollOwnerId in data.ref('poll.ownerId')",
 				question:
-					"isVoter && isCollecting && isQuestionActive && data.questionId in data.ref('question.id') && questionBelongsToPoll",
+					"isVoter && isCollecting && isQuestionActive && data.questionId in data.ref('question.id') && questionBelongsToPoll && answerBelongsToQuestion && data.pollOwnerId in data.ref('question.pollOwnerId')",
 				voter: "isVoter && isCollecting && auth.id in data.ref('voter.id')"
 			},
 			unlink: {
@@ -176,7 +175,7 @@ const rules = {
 			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			pollVisible: "('live' in data.ref('poll.status')) || ('closed' in data.ref('poll.status'))",
 			canViewBreakdown:
-				"('revealed' in data.ref('poll.activePhase')) && ('full' in data.ref('poll.participantResultsMode'))",
+				"('revealed' in data.ref('poll.activePhase')) || ('closed' in data.ref('poll.status'))",
 			immutableScope:
 				"!('pollId' in request.modifiedFields) && !('questionId' in request.modifiedFields) && !('pollOwnerId' in request.modifiedFields)"
 		}
@@ -185,11 +184,11 @@ const rules = {
 	participant_sessions: {
 		allow: {
 			view: 'isPollOwner || isSelf',
-			create: 'isSelf && pollVisible',
+			create: 'isSelf',
 			update: 'isSelf && pollVisible && onlyPresenceFields && immutableScope',
 			delete: 'isSelf || isPollOwner',
 			link: {
-				poll: "isSelf && data.pollId in data.ref('poll.id')",
+				poll: "isSelf && pollVisible && data.pollId in data.ref('poll.id') && data.pollOwnerId in data.ref('poll.ownerId')",
 				user: "isSelf && auth.id in data.ref('user.id')"
 			},
 			unlink: {

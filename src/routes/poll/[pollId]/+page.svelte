@@ -39,11 +39,17 @@
 	);
 
 	const revealFullResults = $derived(
-		Boolean(
-			poll &&
-			(poll.status === 'closed' || poll.activePhase === 'revealed') &&
-			poll.participantResultsMode === 'full'
-		)
+		Boolean(poll && (poll.status === 'closed' || poll.activePhase === 'revealed'))
+	);
+	const voteLockLabel = $derived(
+		poll?.activePhase === 'revealed'
+			? 'Voting is closed for this question.'
+			: 'Voting is currently locked.'
+	);
+	const participantResultsMessage = $derived(
+		revealFullResults
+			? 'Answer breakdown is now visible.'
+			: 'Answer choices stay hidden until reveal.'
 	);
 
 	let selectedAnswerId = $state<string | null>(null);
@@ -258,7 +264,7 @@
 					</button>
 
 					{#if !canVote}
-						<span class="tag muted">Voting is currently locked.</span>
+						<span class="tag muted">{voteLockLabel}</span>
 					{/if}
 				</div>
 			</div>
@@ -268,11 +274,7 @@
 			<div class="stack">
 				<h3 class="h5 no-margin">Participation</h3>
 				<p class="no-margin">{activeStats?.totalVotes ?? 0} responses received</p>
-				{#if revealFullResults}
-					<p class="text-muted no-margin">Answer breakdown is now visible.</p>
-				{:else}
-					<p class="text-muted no-margin">Answer choices stay hidden until reveal.</p>
-				{/if}
+				<p class="text-muted no-margin">{participantResultsMessage}</p>
 			</div>
 		</section>
 	{:else}

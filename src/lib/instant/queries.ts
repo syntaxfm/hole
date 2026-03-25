@@ -220,6 +220,56 @@ export function adminDriveQuery(
 }
 
 /**
+ * Admin edit route: /admin/poll/[pollId]/edit
+ *
+ * - Poll-level settings
+ * - Ordered questions and answers for editor controls
+ */
+export function adminPollEditQuery(
+	pollId: string,
+	ownerId: string
+): AppQuery<{
+	polls: {
+		$: {
+			where: { id: string; ownerId: string };
+			limit: 1;
+		};
+		questions: {
+			$: {
+				order: { order: 'asc' };
+			};
+			answers: {
+				$: {
+					order: { order: 'asc' };
+				};
+			};
+		};
+	};
+}> {
+	return {
+		polls: {
+			$: {
+				where: {
+					id: pollId,
+					ownerId
+				},
+				limit: 1
+			},
+			questions: {
+				$: {
+					order: { order: 'asc' }
+				},
+				answers: {
+					$: {
+						order: { order: 'asc' }
+					}
+				}
+			}
+		}
+	};
+}
+
+/**
  * Embed route: /embed/poll/[pollId]
  *
  * Public, lightweight query for live or closed polls.

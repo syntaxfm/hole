@@ -19,10 +19,7 @@
 
 	const canShowBreakdown = $derived(
 		Boolean(
-			poll &&
-			displayQuestion &&
-			(poll.status === 'closed' || poll.activePhase === 'revealed') &&
-			poll.participantResultsMode === 'full'
+			poll && displayQuestion && (poll.status === 'closed' || poll.activePhase === 'revealed')
 		)
 	);
 

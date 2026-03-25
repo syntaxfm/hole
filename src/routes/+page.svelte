@@ -4,6 +4,7 @@
 	const hasPollId = $derived(Boolean(pollId.trim()));
 	const participantHref = $derived(hasPollId ? `/poll/${pollId.trim()}` : '#');
 	const adminDriveHref = $derived(hasPollId ? `/admin/poll/${pollId.trim()}/drive` : '#');
+	const adminEditHref = $derived(hasPollId ? `/admin/poll/${pollId.trim()}/edit` : '#');
 	const embedHref = $derived(hasPollId ? `/embed/poll/${pollId.trim()}` : '#');
 </script>
 
@@ -27,6 +28,7 @@
 					<a class="button" href="/admin">Admin dashboard</a>
 					<a class="button primary" href="/admin/poll/new">+ New poll</a>
 					<a class="button" aria-disabled={!hasPollId} href={adminDriveHref}>Open drive</a>
+					<a class="button" aria-disabled={!hasPollId} href={adminEditHref}>Edit poll</a>
 					<a class="button" aria-disabled={!hasPollId} href={participantHref}>Participant view</a>
 					<a class="button" aria-disabled={!hasPollId} href={embedHref}>Embed view</a>
 				</div>
