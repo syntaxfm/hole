@@ -28,29 +28,36 @@
 		myVotes.find((vote) => vote.questionId === activeQuestion?.id) ?? null
 	);
 
+	const canRevote = $derived(Boolean(poll?.allowRevoteWhileCollecting ?? true));
 	const canVote = $derived(
 		Boolean(
 			auth.user &&
 			poll &&
 			activeQuestion &&
 			poll.status === 'live' &&
-			poll.activePhase === 'collecting'
+			poll.activePhase === 'collecting' &&
+			(!myActiveVote || canRevote)
 		)
 	);
 
+	const isPreStart = $derived(Boolean(poll && poll.status === 'draft'));
 	const revealFullResults = $derived(
-		Boolean(poll && (poll.status === 'closed' || poll.activePhase === 'revealed'))
+		Boolean(
+			poll &&
+			poll.participantResultsMode === 'full' &&
+			(poll.status === 'closed' || poll.activePhase === 'revealed')
+		)
 	);
-	const voteLockLabel = $derived(
-		poll?.activePhase === 'revealed'
-			? 'Voting is closed for this question.'
-			: 'Voting is currently locked.'
-	);
-	const participantResultsMessage = $derived(
-		revealFullResults
-			? 'Answer breakdown is now visible.'
-			: 'Answer choices stay hidden until reveal.'
-	);
+	const voteLockLabel = $derived.by(() => {
+		if (!poll) return 'Poll is not available.';
+		if (poll.status === 'draft') return 'Starting soon.';
+		if (!activeQuestion) return 'Waiting for the next question.';
+		if (poll.status === 'closed') return 'This poll is closed.';
+		if (poll.activePhase === 'revealed') return 'Voting is closed for this question.';
+		if (poll.activePhase !== 'collecting') return 'Voting is currently locked.';
+		if (myActiveVote && !canRevote) return 'Revoting is disabled for this poll.';
+		return '';
+	});
 
 	let selectedAnswerId = $state<string | null>(null);
 	let isSigningIn = $state(false);
@@ -65,11 +72,25 @@
 	}
 
 	$effect(() => {
-		if (myActiveVote?.answerId && selectedAnswerId !== myActiveVote.answerId) {
-			selectedAnswerId = myActiveVote.answerId;
+		const currentQuestion = activeQuestion;
+		if (!currentQuestion) {
+			selectedAnswerId = null;
+			return;
 		}
 
-		if (!activeQuestion) {
+		const answerIds = new Set(
+			(currentQuestion.answers ?? []).map((answer: Record<string, any>) => String(answer.id))
+		);
+
+		if (myActiveVote?.answerId && answerIds.has(String(myActiveVote.answerId))) {
+			const nextSelected = String(myActiveVote.answerId);
+			if (selectedAnswerId !== nextSelected) {
+				selectedAnswerId = nextSelected;
+			}
+			return;
+		}
+
+		if (!selectedAnswerId || !answerIds.has(selectedAnswerId)) {
 			selectedAnswerId = null;
 		}
 	});
@@ -131,9 +152,16 @@
 		}
 	}
 
-	async function castVote() {
-		if (!auth.user || !poll || !activeQuestion || !selectedAnswerId) return;
+	async function castVote(answerId: string) {
+		if (!auth.user || !poll || !activeQuestion || !answerId || isCastingVote || !canVote) return;
+		if (myActiveVote?.answerId === answerId) return;
 
+		const activeAnswerIds = new Set(
+			(activeQuestion.answers ?? []).map((answer: Record<string, any>) => String(answer.id))
+		);
+		if (!activeAnswerIds.has(answerId)) return;
+
+		selectedAnswerId = answerId;
 		isCastingVote = true;
 		errorMessage = null;
 		try {
@@ -142,7 +170,7 @@
 					pollId: poll.id,
 					questionId: activeQuestion.id,
 					pollOwnerId: poll.ownerId,
-					answerId: selectedAnswerId,
+					answerId,
 					voterId: auth.user.id,
 					existingVoteId: myActiveVote?.id,
 					participantSessionId: participantSession?.id
@@ -156,7 +184,7 @@
 					await db.transact(
 						buildRevoteByVoteKeyTx({
 							questionId: activeQuestion.id,
-							answerId: selectedAnswerId,
+							answerId,
 							voterId: auth.user.id,
 							participantSessionId: participantSession?.id
 						})
@@ -206,22 +234,19 @@
 		<p>This poll doesn't exist or is not visible yet.</p>
 	</div>
 {:else}
-	<section class="layout-card">
-		<article class="stat-card">
-			<small>Poll</small>
-			<strong>{poll.title}</strong>
-		</article>
-		<article class="stat-card">
-			<small>Status</small>
-			<strong>{poll.status}</strong>
-		</article>
-		<article class="stat-card">
-			<small>Phase</small>
-			<strong>{poll.activePhase}</strong>
-		</article>
-	</section>
+	<header class="stack">
+		<h1 class="no-margin">{poll.title}</h1>
+	</header>
 
-	{#if activeQuestion}
+	{#if isPreStart}
+		<section class="box gradient-surface">
+			<div class="stack text-center">
+				<span class="chip">Poll lobby</span>
+				<h2 class="h3 no-margin">{poll.title}</h2>
+				<p class="no-margin"><strong>Starting soon.</strong></p>
+			</div>
+		</section>
+	{:else if activeQuestion}
 		<section class="box">
 			<div class="stack">
 				<div class="stack">
@@ -234,8 +259,9 @@
 						<button
 							type="button"
 							class={`button full ${selectedAnswerId === answer.id ? 'primary' : 'ghost'}`}
+							disabled={!canVote || isCastingVote}
 							onclick={() => {
-								selectedAnswerId = answer.id;
+								void castVote(answer.id);
 							}}
 						>
 							<span class="split full">
@@ -248,39 +274,15 @@
 					{/each}
 				</div>
 
-				<div class="cluster">
-					<button
-						class="button primary"
-						disabled={!canVote || !selectedAnswerId || isCastingVote}
-						onclick={castVote}
-					>
-						{#if isCastingVote}
-							Submitting…
-						{:else if myActiveVote}
-							Update vote
-						{:else}
-							Submit vote
-						{/if}
-					</button>
-
-					{#if !canVote}
-						<span class="tag muted">{voteLockLabel}</span>
-					{/if}
-				</div>
-			</div>
-		</section>
-
-		<section class="box">
-			<div class="stack">
-				<h3 class="h5 no-margin">Participation</h3>
-				<p class="no-margin">{activeStats?.totalVotes ?? 0} responses received</p>
-				<p class="text-muted no-margin">{participantResultsMessage}</p>
+				{#if !canVote && voteLockLabel}
+					<span class="tag muted">{voteLockLabel}</span>
+				{/if}
 			</div>
 		</section>
 	{:else}
 		<div class="callout info">
 			<p><strong>Waiting for the host</strong></p>
-			<p>The next question will appear here once it's live.</p>
+			<p>The next question will appear here automatically.</p>
 		</div>
 	{/if}
 {/if}

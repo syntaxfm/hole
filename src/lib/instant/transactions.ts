@@ -104,6 +104,10 @@ export type LockQuestionInput = {
 	pollId: string;
 };
 
+export type UnlockQuestionInput = {
+	pollId: string;
+};
+
 export type RevealQuestionInput = {
 	pollId: string;
 	questionId: string;
@@ -606,6 +610,22 @@ export function buildLockQuestionTx(input: LockQuestionInput): AppTxChunk[] {
 			{
 				activePhase: 'locked',
 				lockedAt: updatedAt,
+				updatedAt
+			},
+			{ upsert: false }
+		)
+	];
+}
+
+export function buildUnlockQuestionTx(input: UnlockQuestionInput): AppTxChunk[] {
+	const updatedAt = nowTs();
+
+	return [
+		db.tx.polls[input.pollId].update(
+			{
+				activePhase: 'collecting',
+				lockedAt: null,
+				revealedAt: null,
 				updatedAt
 			},
 			{ upsert: false }

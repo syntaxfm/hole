@@ -280,6 +280,7 @@ export function embedLivePollQuery(pollId: string): AppQuery<{
 			where: {
 				id: string;
 				status: { $in: ['live', 'closed'] };
+				isEmbedPublic: true;
 			};
 			limit: 1;
 		};
@@ -304,7 +305,8 @@ export function embedLivePollQuery(pollId: string): AppQuery<{
 			$: {
 				where: {
 					id: pollId,
-					status: { $in: ['live', 'closed'] }
+					status: { $in: ['live', 'closed'] },
+					isEmbedPublic: true
 				},
 				limit: 1
 			},
@@ -338,6 +340,7 @@ export function embedQuestionQuery(
 			where: {
 				id: string;
 				status: { $in: ['live', 'closed'] };
+				isEmbedPublic: true;
 			};
 			limit: 1;
 		};
@@ -360,7 +363,8 @@ export function embedQuestionQuery(
 			$: {
 				where: {
 					id: pollId,
-					status: { $in: ['live', 'closed'] }
+					status: { $in: ['live', 'closed'] },
+					isEmbedPublic: true
 				},
 				limit: 1
 			}

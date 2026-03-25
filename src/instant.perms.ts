@@ -46,7 +46,7 @@ const rules = {
 
 	polls: {
 		allow: {
-			view: 'isOwner || isPublicPoll',
+			view: 'isOwner || isSignedInViewer || isPublicEmbedPoll',
 			create: 'isSelfOwnedCreate && validEnums',
 			update: 'isOwner && ownerUnchanged && validEnums',
 			delete: 'isOwner',
@@ -61,7 +61,8 @@ const rules = {
 			isAdminRole: "'admin' in auth.ref('$user.role')",
 			isOwner: 'isAdminRole && auth.id != null && auth.id == data.ownerId',
 			isSelfOwnedCreate: 'isAdminRole && auth.id != null && auth.id == data.ownerId',
-			isPublicPoll: "data.status in ['live', 'closed']",
+			isSignedInViewer: 'auth.id != null',
+			isPublicEmbedPoll: "data.status in ['live', 'closed'] && data.isEmbedPublic == true",
 			ownerUnchanged: "!('ownerId' in request.modifiedFields) || newData.ownerId == data.ownerId",
 			validEnums:
 				"data.status in ['draft', 'live', 'closed'] && data.activePhase in ['collecting', 'locked', 'revealed'] && data.participantResultsMode in ['count_only', 'full']"
@@ -122,9 +123,10 @@ const rules = {
 	votes: {
 		allow: {
 			view: 'isPollOwner || isVoter',
-			create: 'isVoter',
+			create:
+				'isVoter && isCollecting && isQuestionActive && questionBelongsToPoll && answerBelongsToQuestion',
 			update:
-				'isVoter && isCollecting && isQuestionActive && onlyRevoteFields && immutableVoteScope && answerBelongsToQuestion',
+				'isVoter && isCollecting && isQuestionActive && isRevoteAllowed && onlyRevoteFields && immutableVoteScope && answerBelongsToQuestion',
 			delete: 'isPollOwner',
 			link: {
 				poll: "isVoter && isCollecting && data.pollId in data.ref('poll.id') && data.pollOwnerId in data.ref('poll.ownerId')",
@@ -144,6 +146,7 @@ const rules = {
 			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
 			isCollecting: "'collecting' in data.ref('poll.activePhase')",
 			isQuestionActive: "'active' in data.ref('question.status')",
+			isRevoteAllowed: "true in data.ref('poll.allowRevoteWhileCollecting')",
 			questionBelongsToPoll: "data.pollId in data.ref('question.pollId')",
 			answerBelongsToQuestion: "data.answerId in data.ref('question.answers.id')",
 			onlyRevoteFields: "request.modifiedFields.all(field, field in ['answerId', 'updatedAt'])",
@@ -200,7 +203,8 @@ const rules = {
 			isAdminRole: "'admin' in auth.ref('$user.role')",
 			isSelf: 'auth.id != null && auth.id == data.userId',
 			isPollOwner: 'isAdminRole && auth.id != null && auth.id == data.pollOwnerId',
-			pollVisible: "('live' in data.ref('poll.status')) || ('closed' in data.ref('poll.status'))",
+			pollVisible:
+				"('draft' in data.ref('poll.status')) || ('live' in data.ref('poll.status')) || ('closed' in data.ref('poll.status'))",
 			onlyPresenceFields:
 				"request.modifiedFields.all(field, field in ['lastSeenAt', 'hasVotedActive', 'activeQuestionId'])",
 			immutableScope:

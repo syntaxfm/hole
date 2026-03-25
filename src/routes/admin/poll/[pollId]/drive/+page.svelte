@@ -10,7 +10,8 @@
 		buildLockQuestionTx,
 		buildRecomputeQuestionStatsTx,
 		buildRevealQuestionTx,
-		buildStartPollTx
+		buildStartPollTx,
+		buildUnlockQuestionTx
 	} from '$lib/instant/transactions';
 
 	let { params } = $props();
@@ -26,6 +27,15 @@
 	);
 	const activeQuestion = $derived(
 		sortedQuestions.find((question) => question.id === poll?.activeQuestionId) ?? null
+	);
+	const activeQuestionIndex = $derived(
+		activeQuestion ? sortedQuestions.findIndex((question) => question.id === activeQuestion.id) : -1
+	);
+	const previousQuestion = $derived(
+		activeQuestionIndex > 0 ? sortedQuestions[activeQuestionIndex - 1] : null
+	);
+	const nextQuestionItem = $derived(
+		activeQuestionIndex >= 0 ? (sortedQuestions[activeQuestionIndex + 1] ?? null) : null
 	);
 	const participantSessions = $derived(
 		(query.data?.participant_sessions ?? []) as Array<Record<string, any>>
@@ -64,6 +74,7 @@
 				session.activeQuestionId === activeQuestion?.id && Boolean(session.hasVotedActive)
 		).length
 	);
+	const phaseLabel = $derived((poll?.status === 'draft' ? 'pre-start' : poll?.activePhase) ?? '—');
 
 	let pendingAction = $state<string | null>(null);
 	let actionError = $state<string | null>(null);
@@ -125,11 +136,6 @@
 		);
 	}
 
-	async function lockQuestion() {
-		if (!poll) return;
-		await runAction('lock', () => buildLockQuestionTx({ pollId: poll.id }));
-	}
-
 	async function revealAnswers() {
 		if (!poll || !activeQuestion) return;
 
@@ -137,8 +143,10 @@
 		const voteSnapshot = votes
 			.filter((vote) => vote.questionId === activeQuestion.id)
 			.map((vote) => ({ answerId: String(vote.answerId) }));
+		const shouldLockVotes = poll.activePhase === 'collecting';
 
 		await runAction('reveal', () => [
+			...(shouldLockVotes ? buildLockQuestionTx({ pollId: poll.id }) : []),
 			...buildRecomputeQuestionStatsTx({
 				pollId: poll.id,
 				questionId: activeQuestion.id,
@@ -154,19 +162,35 @@
 		]);
 	}
 
-	async function nextQuestion() {
-		if (!poll || !activeQuestion) return;
+	async function unlockQuestion() {
+		if (!poll || !activeQuestion || poll.activePhase === 'collecting') return;
 
-		const currentIndex = sortedQuestions.findIndex((question) => question.id === activeQuestion.id);
-		const next = currentIndex >= 0 ? sortedQuestions[currentIndex + 1] : null;
-		if (!next) return;
+		await runAction('unlock', () => buildUnlockQuestionTx({ pollId: poll.id }));
+	}
+
+	async function previousQuestionAction() {
+		if (!poll || !activeQuestion || !previousQuestion) return;
+
+		await runAction('previous', () =>
+			buildAdvanceQuestionTx({
+				pollId: poll.id,
+				currentQuestionId: activeQuestion.id,
+				nextQuestionId: previousQuestion.id,
+				nextOrder: Number(previousQuestion.order),
+				participantSessionIdsToReset: participantSessions.map((session) => session.id)
+			})
+		);
+	}
+
+	async function nextQuestion() {
+		if (!poll || !activeQuestion || !nextQuestionItem) return;
 
 		await runAction('next', () =>
 			buildAdvanceQuestionTx({
 				pollId: poll.id,
 				currentQuestionId: activeQuestion.id,
-				nextQuestionId: next.id,
-				nextOrder: Number(next.order),
+				nextQuestionId: nextQuestionItem.id,
+				nextOrder: Number(nextQuestionItem.order),
 				participantSessionIdsToReset: participantSessions.map((session) => session.id)
 			})
 		);
@@ -246,7 +270,7 @@
 		</article>
 		<article class="stat-card">
 			<small>Phase</small>
-			<strong>{poll.activePhase}</strong>
+			<strong>{phaseLabel}</strong>
 		</article>
 		<article class="stat-card">
 			<small>Participants connected</small>
@@ -322,24 +346,31 @@
 				</button>
 				<button
 					class="button"
-					disabled={pendingAction !== null || !activeQuestion || poll.activePhase !== 'collecting'}
-					onclick={lockQuestion}
+					disabled={pendingAction !== null || !previousQuestion}
+					onclick={previousQuestionAction}
 				>
-					{pendingAction === 'lock' ? 'Locking…' : 'Lock in'}
+					{pendingAction === 'previous' ? 'Going back…' : 'Previous question'}
+				</button>
+				<button
+					class="button"
+					disabled={pendingAction !== null || !nextQuestionItem}
+					onclick={nextQuestion}
+				>
+					{pendingAction === 'next' ? 'Advancing…' : 'Next question'}
 				</button>
 				<button
 					class="button"
 					disabled={pendingAction !== null || !activeQuestion || poll.activePhase === 'revealed'}
 					onclick={revealAnswers}
 				>
-					{pendingAction === 'reveal' ? 'Revealing…' : 'Reveal answers'}
+					{pendingAction === 'reveal' ? 'Revealing…' : 'Reveal answers + lock'}
 				</button>
 				<button
 					class="button"
-					disabled={pendingAction !== null || !activeQuestion}
-					onclick={nextQuestion}
+					disabled={pendingAction !== null || !activeQuestion || poll.activePhase === 'collecting'}
+					onclick={unlockQuestion}
 				>
-					{pendingAction === 'next' ? 'Advancing…' : 'Next question'}
+					{pendingAction === 'unlock' ? 'Unlocking…' : 'Unlock voting'}
 				</button>
 				<button class="button error" disabled={pendingAction !== null} onclick={closePoll}>
 					{pendingAction === 'close' ? 'Closing…' : 'Close poll'}
