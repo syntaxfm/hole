@@ -62,7 +62,7 @@ const rules = {
 			isOwner: 'isAdminRole && auth.id != null && auth.id == data.ownerId',
 			isSelfOwnedCreate: 'isAdminRole && auth.id != null && auth.id == data.ownerId',
 			isSignedInViewer: 'auth.id != null',
-			isPublicEmbedPoll: "data.status in ['live', 'closed'] && data.isEmbedPublic == true",
+			isPublicEmbedPoll: 'data.isEmbedPublic == true',
 			ownerUnchanged: "!('ownerId' in request.modifiedFields) || newData.ownerId == data.ownerId",
 			validEnums:
 				"data.status in ['draft', 'live', 'closed'] && data.activePhase in ['collecting', 'locked', 'revealed'] && data.participantResultsMode in ['count_only', 'full']"

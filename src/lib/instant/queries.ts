@@ -272,14 +272,13 @@ export function adminPollEditQuery(
 /**
  * Embed route: /embed/poll/[pollId]
  *
- * Public, lightweight query for live or closed polls.
+ * Public, lightweight query for public embeds (including pre-start).
  */
 export function embedLivePollQuery(pollId: string): AppQuery<{
 	polls: {
 		$: {
 			where: {
 				id: string;
-				status: { $in: ['live', 'closed'] };
 				isEmbedPublic: true;
 			};
 			limit: 1;
@@ -305,7 +304,6 @@ export function embedLivePollQuery(pollId: string): AppQuery<{
 			$: {
 				where: {
 					id: pollId,
-					status: { $in: ['live', 'closed'] },
 					isEmbedPublic: true
 				},
 				limit: 1

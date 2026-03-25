@@ -176,8 +176,7 @@
 				pollId: poll.id,
 				currentQuestionId: activeQuestion.id,
 				nextQuestionId: previousQuestion.id,
-				nextOrder: Number(previousQuestion.order),
-				participantSessionIdsToReset: participantSessions.map((session) => session.id)
+				nextOrder: Number(previousQuestion.order)
 			})
 		);
 	}
@@ -190,8 +189,7 @@
 				pollId: poll.id,
 				currentQuestionId: activeQuestion.id,
 				nextQuestionId: nextQuestionItem.id,
-				nextOrder: Number(nextQuestionItem.order),
-				participantSessionIdsToReset: participantSessions.map((session) => session.id)
+				nextOrder: Number(nextQuestionItem.order)
 			})
 		);
 	}
