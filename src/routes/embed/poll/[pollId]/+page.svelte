@@ -33,6 +33,10 @@
 		const counts = (stats?.countsByAnswer ?? {}) as Record<string, number>;
 		return Number(counts[answerId] ?? 0);
 	}
+	function getQuestionStats(question: Record<string, any> | null) {
+		if (!question?.stats) return null;
+		return Array.isArray(question.stats) ? question.stats[0] : question.stats;
+	}
 </script>
 
 {#if query.isLoading}
