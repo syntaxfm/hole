@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HorizontalResultBar from '$lib/components/HorizontalResultBar.svelte';
 	import { db } from '$lib/instant/client';
 	import { participantPollQuery } from '$lib/instant/queries';
 	import {
@@ -264,15 +265,24 @@
 								void castVote(answer.id);
 							}}
 						>
-							<span class="split full">
-								<span>{answer.text}</span>
-								{#if revealFullResults}
-									<small>{answerCount(answer.id)} votes</small>
-								{/if}
-							</span>
+							<span>{answer.text}</span>
 						</button>
 					{/each}
 				</div>
+
+				{#if revealFullResults}
+					<div class="stack" style="--gap: var(--vs-xs);">
+						<h4 class="h5 no-margin">Results</h4>
+						{#each activeQuestion.answers ?? [] as answer (answer.id)}
+							<HorizontalResultBar
+								label={answer.text}
+								value={answerCount(answer.id)}
+								total={Number(activeStats?.totalVotes ?? 0)}
+								color={String(answer.color ?? '') || '#5A67FF'}
+							/>
+						{/each}
+					</div>
+				{/if}
 
 				{#if !canVote && voteLockLabel}
 					<span class="tag muted">{voteLockLabel}</span>

@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { base } from '$app/paths';
 
+	import HorizontalResultBar from '$lib/components/HorizontalResultBar.svelte';
 	import { db } from '$lib/instant/client';
 	import { embedLivePollQuery } from '$lib/instant/queries';
 
@@ -23,7 +24,7 @@
 		return questions.find((question) => question.id === poll.activeQuestionId) ?? null;
 	}
 
-	function getQuestionStats(question: Record<string, any> | null) {
+	function getQuestionStasts(question: Record<string, any> | null) {
 		if (!question?.stats) return null;
 		return Array.isArray(question.stats) ? question.stats[0] : question.stats;
 	}
@@ -31,12 +32,6 @@
 	function answerCount(stats: Record<string, any> | null, answerId: string): number {
 		const counts = (stats?.countsByAnswer ?? {}) as Record<string, number>;
 		return Number(counts[answerId] ?? 0);
-	}
-
-	function answerPercentage(stats: Record<string, any> | null, answerId: string): number {
-		const total = Number(stats?.totalVotes ?? 0);
-		if (total <= 0) return 0;
-		return Math.round((answerCount(stats, answerId) / total) * 100);
 	}
 </script>
 
@@ -88,28 +83,16 @@
 
 		{#if canShowBreakdown}
 			<section class="box">
-				<div class="stack">
+				<div class="stack" style="--gap: var(--vs-xs);">
 					<h3 class="h5 no-margin">Answer breakdown</h3>
-					<div class="table">
-						<table>
-							<thead>
-								<tr>
-									<th>Answer</th>
-									<th class="text-end">Votes</th>
-									<th class="text-end">Share</th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each activeQuestion.answers ?? [] as answer (answer.id)}
-									<tr>
-										<td>{answer.text}</td>
-										<td class="text-end">{answerCount(stats, answer.id)}</td>
-										<td class="text-end">{answerPercentage(stats, answer.id)}%</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
+					{#each activeQuestion.answers ?? [] as answer (answer.id)}
+						<HorizontalResultBar
+							label={answer.text}
+							value={answerCount(stats, answer.id)}
+							total={Number(stats?.totalVotes ?? 0)}
+							color={String(answer.color ?? '') || '#5A67FF'}
+						/>
+					{/each}
 				</div>
 			</section>
 		{:else}
