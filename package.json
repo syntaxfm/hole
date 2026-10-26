@@ -32,7 +32,7 @@
 		"vite-plugin-devtools-json": "^1.1.2",
 		"vite-plus": "^0.1.24",
 		"vitest-browser-svelte": "^2.2.1",
-		"wrangler": "^4.153.0"
+		"wrangler": "~4.86.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
